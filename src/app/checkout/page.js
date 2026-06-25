@@ -20,7 +20,7 @@ export default function CheckoutPage() {
       setIsProcessing(false);
       setIsSuccess(true);
       setTimeout(() => {
-        router.push('/tailor/dashboard'); // Redirect to dashboard to show order
+        router.push('/orders/latest'); // Redirect to order detail page
       }, 2000);
     }, 1500);
   };

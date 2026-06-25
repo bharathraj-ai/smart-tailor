@@ -1,5 +1,6 @@
 import { User, Mail, Phone, MapPin, Ruler, Package, Edit2 } from 'lucide-react';
 import styles from './profile.module.css';
+import Link from 'next/link';
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -48,6 +49,7 @@ export default async function ProfilePage() {
     })),
     orders: dbUser.orders.map(o => ({
       id: "ORD-" + o.id.substring(0, 4).toUpperCase(),
+      originalId: o.id,
       item: o.items[0]?.category || "Custom Item",
       date: o.createdAt.toLocaleDateString(),
       status: o.status,
@@ -132,21 +134,23 @@ export default async function ProfilePage() {
             </h2>
             <div className={styles.orderList}>
               {user.orders.map((order, i) => (
-                <div key={i} className={styles.orderCard}>
-                  <div className={styles.orderHeader}>
-                    <span className={styles.orderId}>{order.id}</span>
-                    <span className={`${styles.statusBadge} ${styles['status-' + order.status.replace(/ /g, '')] || ''}`}>
-                      {order.status}
-                    </span>
-                  </div>
-                  <div className={styles.orderDetails}>
-                    <div>
-                      <div className={styles.orderItem}>{order.item}</div>
-                      <div className={styles.orderDate}>{order.date}</div>
+                <Link href={`/orders/${order.originalId}`} key={i} style={{ textDecoration: 'none' }}>
+                  <div className={styles.orderCard}>
+                    <div className={styles.orderHeader}>
+                      <span className={styles.orderId}>{order.id}</span>
+                      <span className={`${styles.statusBadge} ${styles['status-' + order.status.replace(/ /g, '')] || ''}`}>
+                        {order.status}
+                      </span>
                     </div>
-                    <div className={styles.orderAmount}>{order.amount}</div>
+                    <div className={styles.orderDetails}>
+                      <div>
+                        <div className={styles.orderItem}>{order.item}</div>
+                        <div className={styles.orderDate}>{order.date}</div>
+                      </div>
+                      <div className={styles.orderAmount}>{order.amount}</div>
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
             
