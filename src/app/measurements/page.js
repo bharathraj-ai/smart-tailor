@@ -18,14 +18,33 @@ export default function MeasurementsPage() {
     customNotes: ''
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Proceed to checkout with measurements
-    router.push('/checkout');
+    setIsSubmitting(true);
+    
+    try {
+      const res = await fetch('/api/measurements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      
+      if (res.ok) {
+        router.push('/checkout');
+      } else {
+        alert('Failed to save measurements');
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      console.error(error);
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -95,8 +114,8 @@ export default function MeasurementsPage() {
           <button type="button" className="btn-secondary">
             <Save size={18} style={{ marginRight: '8px' }} /> Save for Later
           </button>
-          <button type="submit" className="btn-primary">
-            Proceed to Checkout <ArrowRight size={18} style={{ marginLeft: '8px' }} />
+          <button type="submit" className="btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : <>Proceed to Checkout <ArrowRight size={18} style={{ marginLeft: '8px' }} /></>}
           </button>
         </div>
       </form>
