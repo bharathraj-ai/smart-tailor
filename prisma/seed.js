@@ -15,11 +15,14 @@ async function main() {
   // 1. Create a Tailor Account
   const tailor = await prisma.user.upsert({
     where: { phone: '9876543210' },
-    update: {},
+    update: {
+      email: 'admin123@gmail.com',
+      password: await bcrypt.hash('admin@123', 10),
+    },
     create: {
-      name: 'Master Tailor',
-      email: 'tailor@example.com',
-      password: await bcrypt.hash('password123', 10),
+      name: 'Admin Tailor',
+      email: 'admin123@gmail.com',
+      password: await bcrypt.hash('admin@123', 10),
       phone: '9876543210',
       role: 'tailor',
       address: '123 Fashion Street, City',

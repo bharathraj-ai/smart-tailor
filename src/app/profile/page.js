@@ -33,6 +33,10 @@ export default async function ProfilePage() {
     redirect('/login');
   }
 
+  if (dbUser.role === 'tailor') {
+    redirect('/tailor/dashboard');
+  }
+
   const user = {
     name: dbUser.name,
     email: dbUser.email,
