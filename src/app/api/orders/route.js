@@ -18,10 +18,32 @@ export async function POST(req) {
     const body = await req.json();
     const { deliveryType, paymentMethod } = body;
 
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    const user = await prisma.user.findUnique({ 
+      where: { email: session.user.email },
+      include: { measurements: { orderBy: { createdAt: 'desc' }, take: 1 } }
+    });
 
     if (!user) {
       return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
+    }
+
+    let latestMeasurementId = user.measurements.length > 0 ? user.measurements[0].id : undefined;
+
+    if (!latestMeasurementId) {
+      const newMeasurement = await prisma.measurement.create({
+        data: {
+          userId: user.id,
+          name: 'Auto-generated Measurements',
+          chest: 38,
+          waist: 32,
+          hip: 39,
+          shoulder: 17,
+          sleeveLength: 24,
+          neckSize: 15,
+          height: 68
+        }
+      });
+      latestMeasurementId = newMeasurement.id;
     }
 
     const order = await prisma.order.create({
@@ -34,7 +56,8 @@ export async function POST(req) {
         deliveryType: deliveryType === 'home' ? 'Home Delivery' : 'Shop Pickup',
         items: {
           create: {
-            category: 'Custom Shirt (Cotton)'
+            category: 'Custom Shirt (Cotton)',
+            measurementId: latestMeasurementId
           }
         }
       }
