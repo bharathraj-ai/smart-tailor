@@ -1,53 +1,67 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, PhoneCall, Check, Clock, Package, CheckCircle } from 'lucide-react';
 import styles from './dashboard.module.css';
-
-// Mock data
-const mockOrders = [
-  {
-    id: 'ORD-7291',
-    customer: 'Rahul Sharma',
-    phone: 'numberxxxxxxx',
-    item: 'Custom Shirt (Cotton)',
-    date: 'Oct 24, 2026',
-    status: 'Order Received',
-    payment: 'Cash on Delivery',
-    amount: '₹1,299'
-  },
-  {
-    id: 'ORD-7288',
-    customer: 'Priya Patel',
-    phone: 'numberxxxxxxx',
-    item: 'Designer Blouse',
-    date: 'Oct 23, 2026',
-    status: 'In Stitching',
-    payment: 'Razorpay',
-    amount: '₹2,499'
-  },
-  {
-    id: 'ORD-7285',
-    customer: 'Amit Kumar',
-    phone: 'numberxxxxxxx',
-    item: 'Men\'s Suit (Wool)',
-    date: 'Oct 20, 2026',
-    status: 'Ready for Delivery',
-    payment: 'Razorpay',
-    amount: '₹8,999'
-  }
-];
 
 const statuses = ['Order Received', 'In Stitching', 'Quality Check', 'Ready for Delivery', 'Delivered'];
 
 export default function TailorDashboard() {
-  const [orders, setOrders] = useState(mockOrders);
+  const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showMeasurements, setShowMeasurements] = useState(false);
 
-  const updateStatus = (id, newStatus) => {
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch('/api/tailor/orders');
+      if (res.ok) {
+        const data = await res.json();
+        const formattedOrders = data.orders.map(o => ({
+          id: o.id,
+          displayId: "ORD-" + o.id.substring(0, 4).toUpperCase(),
+          customer: o.user.name,
+          phone: o.user.phone,
+          item: o.items[0]?.category || "Custom Item",
+          date: new Date(o.createdAt).toLocaleDateString(),
+          status: o.status,
+          payment: o.paymentMethod,
+          amount: `₹${o.totalAmount}`,
+          items: o.items,
+        }));
+        setOrders(formattedOrders);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateStatus = async (id, newStatus) => {
+    // Optimistic update
     setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
-    // Simulate API call to notify via phone call
-    alert(`Status updated to ${newStatus}. Initiating automated phone call to ${orders.find(o=>o.id===id).phone}...`);
+    
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        alert(`Status updated to ${newStatus}. Saved to database.`);
+      } else {
+        fetchOrders();
+        alert('Failed to update status');
+      }
+    } catch (err) {
+      console.error(err);
+      fetchOrders();
+    }
   };
 
   const getStatusIcon = (status) => {
@@ -59,6 +73,10 @@ export default function TailorDashboard() {
       default: return <Clock size={16} />;
     }
   };
+
+  if (isLoading) {
+    return <div className={`container ${styles.dashboardContainer}`} style={{ textAlign: 'center', padding: '4rem' }}>Loading Orders...</div>;
+  }
 
   return (
     <div className={`container ${styles.dashboardContainer}`}>
@@ -72,9 +90,9 @@ export default function TailorDashboard() {
           <h2 className={styles.sectionTitle}>Active Orders</h2>
           <div className={styles.cards}>
             {orders.map((order) => (
-              <div key={order.id} className={`card ${styles.orderCard} ${selectedOrder?.id === order.id ? styles.selectedCard : ''}`} onClick={() => setSelectedOrder(order)}>
+              <div key={order.id} className={`card ${styles.orderCard} ${selectedOrder?.id === order.id ? styles.selectedCard : ''}`} onClick={() => { setSelectedOrder(order); setShowMeasurements(false); }}>
                 <div className={styles.cardHeader}>
-                  <span className={styles.orderId}>{order.id}</span>
+                  <span className={styles.orderId}>{order.displayId}</span>
                   <span className={`${styles.statusBadge} ${styles[order.status.replace(/ /g, '')]}`}>
                     {getStatusIcon(order.status)}
                     {order.status}
@@ -90,6 +108,7 @@ export default function TailorDashboard() {
                 </div>
               </div>
             ))}
+            {orders.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No orders found.</p>}
           </div>
         </div>
 
@@ -108,9 +127,35 @@ export default function TailorDashboard() {
 
               <div className={styles.detailSection}>
                 <h3>Measurements</h3>
-                <button className="btn-secondary" style={{ padding: '0.5rem 1rem' }}>
-                  <Eye size={16} style={{ marginRight: '8px' }} /> View Full Measurements
-                </button>
+                {!showMeasurements ? (
+                  <button className="btn-secondary" style={{ padding: '0.5rem 1rem' }} onClick={() => setShowMeasurements(true)}>
+                    <Eye size={16} style={{ marginRight: '8px' }} /> View Full Measurements
+                  </button>
+                ) : (
+                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px', marginTop: '1rem' }}>
+                    {selectedOrder.items.map((item, idx) => (
+                      <div key={idx} style={{ marginBottom: '1rem' }}>
+                        <h4 style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>{item.category}</h4>
+                        {item.measurement ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.875rem' }}>
+                            {item.measurement.chest && <div><strong>Chest:</strong> {item.measurement.chest}"</div>}
+                            {item.measurement.waist && <div><strong>Waist:</strong> {item.measurement.waist}"</div>}
+                            {item.measurement.hip && <div><strong>Hip:</strong> {item.measurement.hip}"</div>}
+                            {item.measurement.shoulder && <div><strong>Shoulder:</strong> {item.measurement.shoulder}"</div>}
+                            {item.measurement.sleeveLength && <div><strong>Sleeve:</strong> {item.measurement.sleeveLength}"</div>}
+                            {item.measurement.neckSize && <div><strong>Neck:</strong> {item.measurement.neckSize}"</div>}
+                            {item.measurement.height && <div><strong>Height:</strong> {item.measurement.height}"</div>}
+                          </div>
+                        ) : (
+                          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>No specific measurements provided for this item.</p>
+                        )}
+                      </div>
+                    ))}
+                    <button className="btn-secondary" style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', marginTop: '0.5rem' }} onClick={() => setShowMeasurements(false)}>
+                      Hide Measurements
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className={styles.detailSection}>
@@ -125,7 +170,7 @@ export default function TailorDashboard() {
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
-                  <p className={styles.helperText}><PhoneCall size={14} /> Updating status will trigger an automated phone call to the customer.</p>
+                  <p className={styles.helperText}><PhoneCall size={14} /> Updating status will save to database and notify customer.</p>
                 </div>
               </div>
             </div>

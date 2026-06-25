@@ -12,17 +12,32 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleCheckout = (e) => {
+  const handleCheckout = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
 
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deliveryType, paymentMethod }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to create order');
+      }
+
+      const data = await res.json();
+
       setIsProcessing(false);
       setIsSuccess(true);
       setTimeout(() => {
-        router.push('/orders/latest'); // Redirect to order detail page
+        router.push('/orders/' + data.orderId); // Redirect to order detail page
       }, 2000);
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      setIsProcessing(false);
+    }
   };
 
   if (isSuccess) {
