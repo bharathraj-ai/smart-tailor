@@ -137,15 +137,22 @@ export default function TailorDashboard() {
                       <div key={idx} style={{ marginBottom: '1rem' }}>
                         <h4 style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>{item.category}</h4>
                         {item.measurement ? (
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.875rem' }}>
-                            {item.measurement.chest && <div><strong>Chest:</strong> {item.measurement.chest}"</div>}
-                            {item.measurement.waist && <div><strong>Waist:</strong> {item.measurement.waist}"</div>}
-                            {item.measurement.hip && <div><strong>Hip:</strong> {item.measurement.hip}"</div>}
-                            {item.measurement.shoulder && <div><strong>Shoulder:</strong> {item.measurement.shoulder}"</div>}
-                            {item.measurement.sleeveLength && <div><strong>Sleeve:</strong> {item.measurement.sleeveLength}"</div>}
-                            {item.measurement.neckSize && <div><strong>Neck:</strong> {item.measurement.neckSize}"</div>}
-                            {item.measurement.height && <div><strong>Height:</strong> {item.measurement.height}"</div>}
-                          </div>
+                          <>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.875rem' }}>
+                              {item.measurement.chest && <div><strong>Chest:</strong> {item.measurement.chest}"</div>}
+                              {item.measurement.waist && <div><strong>Waist:</strong> {item.measurement.waist}"</div>}
+                              {item.measurement.hip && <div><strong>Hip:</strong> {item.measurement.hip}"</div>}
+                              {item.measurement.shoulder && <div><strong>Shoulder:</strong> {item.measurement.shoulder}"</div>}
+                              {item.measurement.sleeveLength && <div><strong>Sleeve:</strong> {item.measurement.sleeveLength}"</div>}
+                              {item.measurement.neckSize && <div><strong>Neck:</strong> {item.measurement.neckSize}"</div>}
+                              {item.measurement.height && <div><strong>Height:</strong> {item.measurement.height}"</div>}
+                            </div>
+                            {item.measurement.customNotes && (
+                              <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                                <strong>Notes:</strong> {item.measurement.customNotes}
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>No specific measurements provided for this item.</p>
                         )}
