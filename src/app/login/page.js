@@ -35,8 +35,7 @@ export default function LoginPage() {
       if (res?.error) {
         setError('Invalid email or password');
       } else {
-        router.push('/profile');
-        router.refresh();
+        window.location.href = '/profile';
       }
     } catch (err) {
       setError('An error occurred during login');
