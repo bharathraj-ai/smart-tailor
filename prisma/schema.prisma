@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  username  String?  @unique
+  phone     String   @unique
+  role      String   @default("customer") // 'customer' or 'tailor'
+  password  String?
+  address   String?
+  createdAt DateTime @default(now())
+
+  orders       Order[]
+  measurements Measurement[]
+}
+
+model Measurement {
+  id           String   @id @default(uuid())
+  userId       String
+  name         String   @default("My Measurements")
+  chest        Float?
+  waist        Float?
+  hip          Float?
+  shoulder     Float?
+  sleeveLength Float?
+  neckSize     Float?
+  height       Float?
+  customNotes  String?
+  createdAt    DateTime @default(now())
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  OrderItem[]
+}
+
+model Order {
+  id            String   @id @default(uuid())
+  userId        String
+  status        String   @default("Order Received")
+  paymentMethod String
+  paymentStatus String   @default("Pending")
+  totalAmount   Float
+  deliveryType  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+}
+
+model OrderItem {
+  id             String  @id @default(uuid())
+  orderId        String
+  category       String
+  fabric         String?
+  designRefImage String?
+  measurementId  String?
+
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  measurement Measurement? @relation(fields: [measurementId], references: [id])
+}

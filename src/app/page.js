@@ -1,66 +1,70 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from 'next/link';
+import { ArrowRight, Scissors, Ruler, Truck } from 'lucide-react';
+import styles from './page.module.css';
+import heroImg from '../images/images.jpg';
 
 export default function Home() {
   return (
     <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+      <section className={styles.hero}>
+        <div className={`container ${styles.heroContainer}`}>
+          <div className={styles.heroContent}>
+            <h1 className={styles.heroTitle}>
+              Perfectly Fitted <span className={styles.textAccent}>Custom Clothing</span> Delivered to You.
+            </h1>
+            <p className={styles.heroSubtitle}>
+              Experience the luxury of custom tailoring from the comfort of your home. Submit your measurements, choose your fabric, and let our expert tailors do the rest.
+            </p>
+            <div className={styles.heroActions}>
+              <Link href="/categories" className="btn-primary">
+                Explore Categories <ArrowRight size={20} style={{ marginLeft: '8px' }} />
+              </Link>
+              <Link href="/how-it-works" className="btn-secondary">
+                How It Works
+              </Link>
+            </div>
+          </div>
+          <div className={styles.heroImageContainer}>
+            <div className={styles.heroImagePattern}></div>
+            <div className={styles.heroImagePlaceholder}>
+              <img 
+                src={heroImg.src}
+                alt="Tailor working on a suit" 
+                className={styles.heroImage}
+              />
+            </div>
+          </div>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <section className={`section ${styles.featuresSection}`}>
+        <div className="container">
+          <h2 className={styles.sectionTitle}>Why Choose SmartTailor?</h2>
+          <div className={styles.featuresGrid}>
+            <div className={`card ${styles.featureCard}`}>
+              <div className={styles.featureIconWrapper}>
+                <Scissors className={styles.featureIcon} />
+              </div>
+              <h3 className={styles.featureTitle}>Expert Tailoring</h3>
+              <p className={styles.featureText}>We partner with the best local tailors to ensure premium stitching and finish.</p>
+            </div>
+            <div className={`card ${styles.featureCard}`}>
+              <div className={styles.featureIconWrapper}>
+                <Ruler className={styles.featureIcon} />
+              </div>
+              <h3 className={styles.featureTitle}>Perfect Fit</h3>
+              <p className={styles.featureText}>Submit your measurements online and save them for future orders.</p>
+            </div>
+            <div className={`card ${styles.featureCard}`}>
+              <div className={styles.featureIconWrapper}>
+                <Truck className={styles.featureIcon} />
+              </div>
+              <h3 className={styles.featureTitle}>Doorstep Delivery</h3>
+              <p className={styles.featureText}>Get your stitched garments delivered home or pick them up from the store.</p>
+            </div>
+          </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 }
