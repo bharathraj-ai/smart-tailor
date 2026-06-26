@@ -1,16 +1,12 @@
 import Link from 'next/link';
 import styles from './categories.module.css';
+import prisma from '@/lib/db';
 
-const categories = [
-  { id: 'shirts', name: 'Shirts', image: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
-  { id: 'pants', name: 'Pants', image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
-  { id: 'suits', name: 'Suits', image: 'https://images.unsplash.com/photo-1594938298598-718890fc5cb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
-  { id: 'kurtas', name: 'Kurtas', image: 'https://images.unsplash.com/photo-1583391733958-d25e07facd62?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
-  { id: 'blouses', name: 'Blouses', image: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
-  { id: 'custom', name: 'Custom Designs', image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
-];
+export default async function CategoriesPage() {
+  const categories = await prisma.category.findMany({
+    orderBy: { createdAt: 'asc' }
+  });
 
-export default function CategoriesPage() {
   return (
     <div className={`container ${styles.categoriesContainer}`}>
       <div className={styles.header}>
@@ -20,9 +16,9 @@ export default function CategoriesPage() {
 
       <div className={styles.grid}>
         {categories.map((cat) => (
-          <Link href={`/measurements?category=${cat.id}`} key={cat.id} className={styles.card}>
+          <Link href={`/measurements?category=${cat.slug}`} key={cat.id} className={styles.card}>
             <div className={styles.imageWrapper}>
-              <img src={cat.image} alt={cat.name} className={styles.image} />
+              <img src={`/api/images/${cat.imageId}`} alt={cat.name} className={styles.image} />
             </div>
             <div className={styles.cardContent}>
               <h3 className={styles.cardTitle}>{cat.name}</h3>
@@ -30,6 +26,7 @@ export default function CategoriesPage() {
             </div>
           </Link>
         ))}
+        {categories.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No categories found. Admin can add them in the dashboard.</p>}
       </div>
     </div>
   );

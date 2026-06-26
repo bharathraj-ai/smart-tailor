@@ -18,7 +18,10 @@ export default function Navbar() {
         
         <nav className={styles.navLinks}>
           <Link href="/categories" className={styles.navLink}>Categories</Link>
-          <Link href="/measurements" className={styles.navLink}>Measurements</Link>
+          <Link href="/contact" className={styles.navLink}>Contact</Link>
+          {session?.user?.role === 'tailor' && (
+            <Link href="/admin/dashboard" className={styles.navLink}>Admin</Link>
+          )}
         </nav>
 
         <div className={styles.navActions}>

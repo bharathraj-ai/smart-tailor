@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Eye, PhoneCall, Check, Clock, Package, CheckCircle } from 'lucide-react';
 import styles from './dashboard.module.css';
 
@@ -80,9 +81,14 @@ export default function TailorDashboard() {
 
   return (
     <div className={`container ${styles.dashboardContainer}`}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Tailor Dashboard</h1>
-        <p className={styles.subtitle}>Manage your stitching workflow and active orders.</p>
+      <div className={styles.header} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 className={styles.title}>Tailor Dashboard</h1>
+          <p className={styles.subtitle}>Manage your stitching workflow and active orders.</p>
+        </div>
+        <Link href="/admin/categories" className="btn-primary">
+          Manage Categories
+        </Link>
       </div>
 
       <div className={styles.dashboardGrid}>

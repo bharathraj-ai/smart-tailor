@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import SessionProviderWrapper from "@/components/SessionProviderWrapper";
 
 const geistSans = Geist({
@@ -23,10 +23,9 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
         <SessionProviderWrapper>
-          <Navbar />
-          <main style={{ paddingTop: 'var(--nav-height)', minHeight: 'calc(100vh - var(--nav-height))' }}>
+          <LayoutWrapper>
             {children}
-          </main>
+          </LayoutWrapper>
         </SessionProviderWrapper>
       </body>
     </html>
