@@ -1,16 +1,11 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from 'next/navigation';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
 import styles from './order.module.css';
 import { Package, Scissors, CheckCircle, Truck, Store } from 'lucide-react';
 import Link from 'next/link';
+import prisma from '@/lib/db';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
 
 export default async function OrderDetailsPage({ params }) {
   const session = await getServerSession(authOptions);

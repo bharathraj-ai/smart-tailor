@@ -5,13 +5,8 @@ import Link from 'next/link';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from 'next/navigation';
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import prisma from '@/lib/db';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
@@ -34,9 +29,6 @@ export default async function ProfilePage() {
     redirect('/login');
   }
 
-  if (dbUser.role === 'tailor') {
-    redirect('/tailor/dashboard');
-  }
 
   const user = {
     name: dbUser.name,

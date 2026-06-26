@@ -65,3 +65,12 @@ model OrderItem {
   order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
   measurement Measurement? @relation(fields: [measurementId], references: [id])
 }
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  imageId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
