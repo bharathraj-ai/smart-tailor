@@ -50,7 +50,7 @@ export default function SignupPage() {
             <UserPlus size={40} />
           </div>
           <h1 className={styles.title}>Create Account</h1>
-          <p className={styles.subtitle}>Join SmartTailor to order custom clothes.</p>
+          <p className={styles.subtitle}>Join Ajay Tailor to order custom clothes.</p>
         </div>
 
         {error && <div className={styles.errorMsg}>{error}</div>}

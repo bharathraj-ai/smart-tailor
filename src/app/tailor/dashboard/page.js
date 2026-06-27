@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Eye, PhoneCall, Check, Clock, Package, CheckCircle } from 'lucide-react';
+import { Eye, PhoneCall, Check, Clock, Package, CheckCircle, X } from 'lucide-react';
 import styles from './dashboard.module.css';
 import { cachedFetch, invalidateCache } from '@/lib/apiCache';
 
@@ -13,6 +13,14 @@ export default function TailorDashboard() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showMeasurements, setShowMeasurements] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState(null);
+
+  // Close lightbox on Escape key
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === 'Escape') setLightboxImage(null); };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
 
   useEffect(() => {
     fetchOrders();
@@ -163,9 +171,9 @@ export default function TailorDashboard() {
                                   {imageBase64 && (
                                     <div style={{ marginTop: '0.5rem' }}>
                                       <strong>Reference Image:</strong>
-                                      <a href={imageBase64} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginTop: '0.25rem' }}>
-                                        <img src={imageBase64} alt="Reference design" style={{ maxWidth: '150px', maxHeight: '150px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
-                                      </a>
+                                      <div style={{ marginTop: '0.25rem' }}>
+                                        <img src={imageBase64} alt="Reference design" onClick={() => setLightboxImage(imageBase64)} style={{ maxWidth: '150px', maxHeight: '150px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'pointer', transition: 'opacity 0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = '0.8'} onMouseLeave={e => e.currentTarget.style.opacity = '1'} />
+                                      </div>
                                     </div>
                                   )}
                                 </div>
@@ -208,6 +216,60 @@ export default function TailorDashboard() {
           )}
         </div>
       </div>
+
+      {/* Lightbox Popup */}
+      {lightboxImage && (
+        <div
+          onClick={() => setLightboxImage(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          <button
+            onClick={() => setLightboxImage(null)}
+            aria-label="Close image preview"
+            style={{
+              position: 'absolute',
+              top: '1.5rem',
+              right: '1.5rem',
+              background: 'rgba(255,255,255,0.15)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#fff',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+          >
+            <X size={24} />
+          </button>
+          <img
+            src={lightboxImage}
+            alt="Reference design full view"
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              objectFit: 'contain',
+              borderRadius: '12px',
+              boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

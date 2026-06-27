@@ -1,16 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Ruler, Search, User } from 'lucide-react';
+import { Ruler, Search, User, X } from 'lucide-react';
 import { cachedFetch } from '@/lib/apiCache';
 
 export default function AdminMeasurementsPage() {
   const [measurements, setMeasurements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [lightboxImage, setLightboxImage] = useState(null);
 
   useEffect(() => {
     fetchMeasurements();
+  }, []);
+
+  // Close lightbox on Escape key
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === 'Escape') setLightboxImage(null); };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
   const fetchMeasurements = async () => {
@@ -93,9 +101,12 @@ export default function AdminMeasurementsPage() {
                   {imageBase64 && (
                     <div className="mt-2">
                       <p className="font-semibold mb-1 text-foreground">Reference Image:</p>
-                      <a href={imageBase64} target="_blank" rel="noopener noreferrer" className="inline-block">
-                        <img src={imageBase64} alt="Reference design" className="max-w-[120px] max-h-[120px] object-cover rounded-lg border border-border" />
-                      </a>
+                      <img
+                        src={imageBase64}
+                        alt="Reference design"
+                        className="max-w-[120px] max-h-[120px] object-cover rounded-lg border border-border cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setLightboxImage(imageBase64)}
+                      />
                     </div>
                   )}
                 </div>
@@ -108,6 +119,61 @@ export default function AdminMeasurementsPage() {
           <div className="col-span-full text-center py-12 text-muted-foreground">No measurements found.</div>
         )}
       </div>
+
+      {/* Lightbox Popup */}
+      {lightboxImage && (
+        <div
+          onClick={() => setLightboxImage(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
+            animation: 'fadeIn 0.2s ease-out',
+          }}
+        >
+          <button
+            onClick={() => setLightboxImage(null)}
+            aria-label="Close image preview"
+            style={{
+              position: 'absolute',
+              top: '1.5rem',
+              right: '1.5rem',
+              background: 'rgba(255,255,255,0.15)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: '#fff',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+          >
+            <X size={24} />
+          </button>
+          <img
+            src={lightboxImage}
+            alt="Reference design full view"
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              objectFit: 'contain',
+              borderRadius: '12px',
+              boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

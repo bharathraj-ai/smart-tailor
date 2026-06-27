@@ -126,33 +126,10 @@ export default async function ProfilePage() {
               </div>
             </div>
             
-            <button className="btn-secondary" style={{ width: '100%', marginTop: '2rem' }}>
+            <Link href="/profile/edit" className="btn-secondary" style={{ width: '100%', marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
               <Edit2 size={16} style={{ marginRight: '8px' }} /> Edit Profile
-            </button>
+            </Link>
           </div>
-
-          <div className={styles.card}>
-            <h2 className={styles.sectionTitle}>
-              <Ruler size={24} /> Saved Measurements
-            </h2>
-            <div className={styles.measurementList}>
-              {user.measurements.map((m, i) => (
-                <div key={i} className={styles.measurementItem}>
-                  <div>
-                    <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{m.name}</div>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Updated {m.date}</div>
-                  </div>
-                  <button className="btn-secondary" style={{ padding: '0.5rem' }}>
-                    <Edit2 size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <button className="btn-primary" style={{ width: '100%', marginTop: '1.5rem' }}>
-              + Add New Profile
-            </button>
-          </div>
-          
         </div>
 
         {/* Right Column - Orders */}
@@ -184,7 +161,7 @@ export default async function ProfilePage() {
             </div>
             
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-              <button className="btn-secondary">View All Orders</button>
+              <Link href="/orders" className="btn-secondary">View All Orders</Link>
             </div>
           </div>
         </div>

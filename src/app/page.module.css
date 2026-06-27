@@ -360,10 +360,10 @@
     justify-content: center;
   }
   .heroImageContainer {
-    aspect-ratio: 16/9;
-    max-width: 600px;
+    aspect-ratio: 3/4;
+    max-width: 500px;
     margin: 0 auto;
-    min-height: 300px;
+    min-height: 350px;
   }
   .stepsGrid {
     flex-direction: column;
@@ -421,8 +421,8 @@
   }
   .heroImageContainer {
     max-width: 100%;
-    aspect-ratio: 3/2;
-    min-height: 200px;
+    aspect-ratio: 3/4;
+    min-height: 300px;
   }
   .heroImagePattern {
     top: -1rem;

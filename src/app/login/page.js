@@ -86,7 +86,7 @@ export default function LoginPage() {
             <LogIn size={40} />
           </div>
           <h1 className={styles.title}>Welcome Back</h1>
-          <p className={styles.subtitle}>Sign in to your SmartTailor account.</p>
+          <p className={styles.subtitle}>Sign in to your Ajay Tailor account.</p>
         </div>
 
         {error && <div className={styles.errorMsg}>{error}</div>}

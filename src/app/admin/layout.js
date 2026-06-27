@@ -79,7 +79,7 @@ export default function AdminLayout({ children }) {
       >
         <div className="p-6 flex items-center justify-between">
           <Link href="/admin/dashboard" className="text-xl font-bold text-primary flex items-center gap-2">
-            <span>SmartTailor Admin</span>
+            <span>Ajay Tailor Admin</span>
           </Link>
           <button className="lg:hidden text-muted-foreground hover:text-foreground" onClick={() => setIsSidebarOpen(false)}>
             <X size={20} />
@@ -139,7 +139,7 @@ export default function AdminLayout({ children }) {
           <span className="font-semibold text-foreground">Admin Panel</span>
           <Link href="/" className="text-primary font-bold text-sm flex items-center gap-1.5">
             <Scissors size={16} />
-            <span>SmartTailor</span>
+            <span> Ajay Tailor</span>
           </Link>
         </header>
 

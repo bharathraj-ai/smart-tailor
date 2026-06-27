@@ -299,9 +299,7 @@ function MeasurementsContent() {
         </div>
 
         <div className={styles.actions}>
-          <button type="button" className="btn-secondary">
-            <Save size={18} style={{ marginRight: '8px' }} /> Save for Later
-          </button>
+
           <button type="submit" className="btn-primary" disabled={isSubmitting}>
             {isSubmitting ? 'Saving...' : <>Proceed to Checkout <ArrowRight size={18} style={{ marginLeft: '8px' }} /></>}
           </button>
