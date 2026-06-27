@@ -1,13 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+import { getDb } from "@/lib/db";
 
 export const authOptions = {
   providers: [
@@ -22,17 +16,31 @@ export const authOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
-          }
-        });
+        const db = await getDb();
+        console.log('[NextAuth] Attempting login for:', credentials.email);
+        const { data: user, error } = await db
+          .from('users')
+          .select('*')
+          .eq('email', credentials.email)
+          .single();
 
-        if (!user || !user.password) {
+        if (error) {
+          console.error('[NextAuth] Database query error:', error.message);
+          return null;
+        }
+
+        if (!user) {
+          console.log('[NextAuth] User not found');
+          return null;
+        }
+
+        if (!user.password) {
+          console.log('[NextAuth] User has no password set');
           return null;
         }
 
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+        console.log('[NextAuth] Password valid:', isPasswordValid);
 
         if (!isPasswordValid) {
           return null;
@@ -71,5 +79,13 @@ export const authOptions = {
   }
 };
 
-const handler = NextAuth(authOptions);
+const handler = async (req, ctx) => {
+  const host = req.headers.get('host');
+  if (host) {
+    const protocol = req.headers.get('x-forwarded-proto') || 'http';
+    process.env.NEXTAUTH_URL = `${protocol}://${host}`;
+  }
+  return NextAuth(authOptions)(req, ctx);
+};
+
 export { handler as GET, handler as POST };
