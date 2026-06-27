@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from "@/lib/db";
+import { getDb } from '@/lib/db';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -10,19 +10,19 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const measurements = await prisma.measurement.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-          }
-        }
-      }
-    });
+    const db = await getDb();
 
-    return NextResponse.json({ measurements }, { status: 200 });
+    // Fetch measurements joined with the user's name and email
+    const { data: measurements, error } = await db
+      .from('measurements')
+      .select('*, user:users(name, email)')
+      .order('createdAt', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json({ measurements: measurements || [] }, { status: 200 });
   } catch (error) {
     console.error('Error fetching measurements:', error);
     return NextResponse.json({ error: 'Failed to fetch measurements' }, { status: 500 });

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, PhoneCall, Check, Clock, Package, CheckCircle } from 'lucide-react';
 import styles from './dashboard.module.css';
+import { cachedFetch, invalidateCache } from '@/lib/apiCache';
 
 const statuses = ['Order Received', 'In Stitching', 'Quality Check', 'Ready for Delivery', 'Delivered'];
 
@@ -19,23 +20,21 @@ export default function TailorDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('/api/tailor/orders');
-      if (res.ok) {
-        const data = await res.json();
-        const formattedOrders = data.orders.map(o => ({
-          id: o.id,
-          displayId: "ORD-" + o.id.substring(0, 4).toUpperCase(),
-          customer: o.user.name,
-          phone: o.user.phone,
-          item: o.items[0]?.category || "Custom Item",
-          date: new Date(o.createdAt).toLocaleDateString(),
-          status: o.status,
-          payment: o.paymentMethod,
-          amount: `₹${o.totalAmount}`,
-          items: o.items,
-        }));
-        setOrders(formattedOrders);
-      }
+      // Cached for 2 minutes. Invalidated automatically on status update.
+      const data = await cachedFetch('/api/tailor/orders', {}, 120);
+      const formattedOrders = data.orders.map(o => ({
+        id: o.id,
+        displayId: "ORD-" + o.id.substring(0, 4).toUpperCase(),
+        customer: o.user.name,
+        phone: o.user.phone,
+        item: o.items[0]?.category || "Custom Item",
+        date: new Date(o.createdAt).toLocaleDateString(),
+        status: o.status,
+        payment: o.paymentMethod,
+        amount: `₹${o.totalAmount}`,
+        items: o.items,
+      }));
+      setOrders(formattedOrders);
     } catch (err) {
       console.error(err);
     } finally {
@@ -54,6 +53,7 @@ export default function TailorDashboard() {
         body: JSON.stringify({ status: newStatus })
       });
       if (res.ok) {
+        invalidateCache('/api/tailor/orders'); // Clear stale cache after mutation.
         alert(`Status updated to ${newStatus}. Saved to database.`);
       } else {
         fetchOrders();
@@ -153,11 +153,24 @@ export default function TailorDashboard() {
                               {item.measurement.neckSize && <div><strong>Neck:</strong> {item.measurement.neckSize}"</div>}
                               {item.measurement.height && <div><strong>Height:</strong> {item.measurement.height}"</div>}
                             </div>
-                            {item.measurement.customNotes && (
-                              <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                                <strong>Notes:</strong> {item.measurement.customNotes}
-                              </div>
-                            )}
+                            {item.measurement.customNotes && (() => {
+                              const parts = item.measurement.customNotes.split('|||');
+                              const noteText = parts[0];
+                              const imageBase64 = parts[1];
+                              return (
+                                <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                                  {noteText && <div><strong>Notes:</strong> {noteText}</div>}
+                                  {imageBase64 && (
+                                    <div style={{ marginTop: '0.5rem' }}>
+                                      <strong>Reference Image:</strong>
+                                      <a href={imageBase64} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginTop: '0.25rem' }}>
+                                        <img src={imageBase64} alt="Reference design" style={{ maxWidth: '150px', maxHeight: '150px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </>
                         ) : (
                           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>No specific measurements provided for this item.</p>

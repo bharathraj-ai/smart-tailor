@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
+import { getDb } from "@/lib/db";
 
 export async function POST(req) {
   try {
@@ -10,54 +10,90 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { deliveryType, paymentMethod } = body;
+    const { deliveryType, paymentMethod, category, totalAmount } = body;
 
-    const user = await prisma.user.findUnique({ 
-      where: { email: session.user.email },
-      include: { measurements: { orderBy: { createdAt: 'desc' }, take: 1 } }
-    });
+    const db = await getDb();
+
+    const { data: user } = await db
+      .from('users')
+      .select('*')
+      .eq('email', session.user.email)
+      .single();
 
     if (!user) {
       return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
     }
 
-    let latestMeasurementId = user.measurements.length > 0 ? user.measurements[0].id : undefined;
+    const userId = user.id;
 
-    if (!latestMeasurementId) {
-      const newMeasurement = await prisma.measurement.create({
-        data: {
-          userId: user.id,
-          name: 'Auto-generated Measurements',
-          chest: 38,
-          waist: 32,
-          hip: 39,
-          shoulder: 17,
-          sleeveLength: 24,
-          neckSize: 15,
-          height: 68
-        }
-      });
-      latestMeasurementId = newMeasurement.id;
+    // Find latest measurement
+    const { data: latestMeasurementData } = await db
+      .from('measurements')
+      .select('*')
+      .eq('userId', userId)
+      .order('createdAt', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let latestMeasurement = latestMeasurementData;
+
+    if (!latestMeasurement) {
+      const { data: insertedMeasurement, error: mError } = await db
+        .from('measurements')
+        .insert([
+          {
+            userId,
+            name: 'Auto-generated Measurements',
+            chest: 38, waist: 32, hip: 39,
+            shoulder: 17, sleeveLength: 24,
+            neckSize: 15, height: 68,
+          }
+        ])
+        .select()
+        .single();
+      
+      if (mError) {
+        throw mError;
+      }
+      latestMeasurement = insertedMeasurement;
     }
 
-    const order = await prisma.order.create({
-      data: {
-        userId: user.id,
-        status: 'Order Received',
-        totalAmount: 1299,
-        paymentStatus: paymentMethod === 'cod' ? 'Pending' : 'Paid',
-        paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Razorpay / Online',
-        deliveryType: deliveryType === 'home' ? 'Home Delivery' : 'Shop Pickup',
-        items: {
-          create: {
-            category: 'Custom Shirt (Cotton)',
-            measurementId: latestMeasurementId
-          }
+    // Create order
+    const { data: orderResult, error: orderError } = await db
+      .from('orders')
+      .insert([
+        {
+          userId,
+          status: 'Order Received',
+          totalAmount: totalAmount ? parseFloat(totalAmount) : 1299,
+          paymentStatus: paymentMethod === 'cod' ? 'Pending' : 'Paid',
+          paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Razorpay / Online',
+          deliveryType: deliveryType === 'home' ? 'Home Delivery' : 'Shop Pickup',
         }
-      }
-    });
+      ])
+      .select()
+      .single();
 
-    return new Response(JSON.stringify({ orderId: order.id }), { status: 201 });
+    if (orderError) {
+      throw orderError;
+    }
+
+    // Create order item
+    const { error: itemError } = await db
+      .from('orderItems')
+      .insert([
+        {
+          orderId: orderResult.id,
+          category: category || 'Custom Garment',
+          measurementId: latestMeasurement.id,
+        }
+      ]);
+
+    if (itemError) {
+      throw itemError;
+    }
+
+    return new Response(JSON.stringify({ orderId: orderResult.id }), { status: 201 });
   } catch (error) {
     console.error('Order creation error:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });

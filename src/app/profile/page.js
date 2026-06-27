@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from 'next/navigation';
-import prisma from '@/lib/db';
+import { getDb } from '@/lib/db';
 
 
 export default async function ProfilePage() {
@@ -15,35 +15,72 @@ export default async function ProfilePage() {
     redirect('/login');
   }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    include: {
-      measurements: true,
-      orders: {
-        include: { items: true }
-      }
-    }
-  });
+  const db = await getDb();
+
+  const { data: dbUser } = await db
+    .from('users')
+    .select('*')
+    .eq('email', session.user.email)
+    .single();
 
   if (!dbUser) {
     redirect('/login');
   }
 
+  const userId = dbUser.id;
+
+  // Get measurements
+  const { data: measurementsData } = await db
+    .from('measurements')
+    .select('*')
+    .eq('userId', userId);
+  const measurements = measurementsData || [];
+
+  // Get orders
+  const { data: ordersData } = await db
+    .from('orders')
+    .select('*')
+    .eq('userId', userId)
+    .order('createdAt', { ascending: false });
+  const orders = ordersData || [];
+
+  // Batch fetch all order items in a single query instead of N+1 loop
+  let orderItemsMap = {};
+  if (orders.length > 0) {
+    const orderIds = orders.map(o => o.id);
+    const { data: allItems } = await db
+      .from('orderItems')
+      .select('*')
+      .in('orderId', orderIds);
+    
+    // Group items by orderId
+    for (const item of (allItems || [])) {
+      if (!orderItemsMap[item.orderId]) {
+        orderItemsMap[item.orderId] = [];
+      }
+      orderItemsMap[item.orderId].push(item);
+    }
+  }
+
+  // Attach items to orders
+  for (const order of orders) {
+    order.items = orderItemsMap[order.id] || [];
+  }
 
   const user = {
     name: dbUser.name,
     email: dbUser.email,
     phone: dbUser.phone,
     address: dbUser.address || "No address provided",
-    measurements: dbUser.measurements.map(m => ({
+    measurements: measurements.map(m => ({
       name: m.name,
-      date: m.createdAt.toLocaleDateString()
+      date: new Date(m.createdAt).toLocaleDateString()
     })),
-    orders: dbUser.orders.map(o => ({
+    orders: orders.map(o => ({
       id: "ORD-" + o.id.substring(0, 4).toUpperCase(),
       originalId: o.id,
       item: o.items[0]?.category || "Custom Item",
-      date: o.createdAt.toLocaleDateString(),
+      date: new Date(o.createdAt).toLocaleDateString(),
       status: o.status,
       amount: `₹${o.totalAmount}`
     }))
@@ -102,8 +139,8 @@ export default async function ProfilePage() {
               {user.measurements.map((m, i) => (
                 <div key={i} className={styles.measurementItem}>
                   <div>
-                    <div style={{ fontWeight: 500, color: '#fff' }}>{m.name}</div>
-                    <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Updated {m.date}</div>
+                    <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{m.name}</div>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Updated {m.date}</div>
                   </div>
                   <button className="btn-secondary" style={{ padding: '0.5rem' }}>
                     <Edit2 size={14} />

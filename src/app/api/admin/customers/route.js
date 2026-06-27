@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from "@/lib/db";
+import { getDb } from '@/lib/db';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -10,18 +10,39 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const customers = await prisma.user.findMany({
-      where: { role: 'customer' },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        _count: {
-          select: {
-            orders: true,
-            measurements: true,
-          }
-        }
-      }
-    });
+    const db = await getDb();
+
+    const { data: customersData, error: fetchError } = await db
+      .from('users')
+      .select('*')
+      .eq('role', 'customer')
+      .order('createdAt', { ascending: false });
+
+    if (fetchError) {
+      throw fetchError;
+    }
+
+    const customers = customersData || [];
+
+    // Enrich with order and measurement counts
+    for (const customer of customers) {
+      // Get orders count
+      const { count: orderCount } = await db
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('userId', customer.id);
+
+      // Get measurements count
+      const { count: measurementCount } = await db
+        .from('measurements')
+        .select('*', { count: 'exact', head: true })
+        .eq('userId', customer.id);
+
+      customer._count = {
+        orders: orderCount || 0,
+        measurements: measurementCount || 0
+      };
+    }
 
     return NextResponse.json({ customers }, { status: 200 });
   } catch (error) {

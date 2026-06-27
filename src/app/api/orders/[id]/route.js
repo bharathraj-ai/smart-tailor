@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
+import { getDb } from "@/lib/db";
 
 export async function PATCH(req, { params }) {
   try {
@@ -9,7 +9,14 @@ export async function PATCH(req, { params }) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    const db = await getDb();
+
+    const { data: user } = await db
+      .from('users')
+      .select('*')
+      .eq('email', session.user.email)
+      .single();
+
     if (!user || user.role !== 'tailor') {
       return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
     }
@@ -19,12 +26,26 @@ export async function PATCH(req, { params }) {
     const body = await req.json();
     const { status } = body;
 
-    const order = await prisma.order.update({
-      where: { id },
-      data: { status }
-    });
+    if (!id) {
+      return new Response(JSON.stringify({ error: 'Invalid order ID' }), { status: 400 });
+    }
 
-    return new Response(JSON.stringify({ order }), { status: 200 });
+    const { data: result, error: updateError } = await db
+      .from('orders')
+      .update({ status })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    if (!result) {
+      return new Response(JSON.stringify({ error: 'Order not found' }), { status: 404 });
+    }
+
+    return new Response(JSON.stringify({ order: result }), { status: 200 });
   } catch (error) {
     console.error('Update order error:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });

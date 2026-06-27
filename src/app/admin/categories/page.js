@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import { Trash2, Plus, Image as ImageIcon } from 'lucide-react';
 import styles from './categories.module.css';
+import { cachedFetch, invalidateCache } from '@/lib/apiCache';
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
+  const [price, setPrice] = useState('');
   const [imageBase64, setImageBase64] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -17,11 +19,8 @@ export default function AdminCategoriesPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/categories');
-      if (res.ok) {
-        const data = await res.json();
-        setCategories(data.categories);
-      }
+      const data = await cachedFetch('/api/categories', {}, 300);
+      setCategories(data.categories);
     } catch (err) {
       console.error(err);
     }
@@ -40,8 +39,8 @@ export default function AdminCategoriesPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !slug || !imageBase64) {
-      alert('Please fill all fields and select an image');
+    if (!name || !slug || !price || !imageBase64) {
+      alert('Please fill all fields, set a price, and select an image');
       return;
     }
     
@@ -50,12 +49,14 @@ export default function AdminCategoriesPage() {
       const res = await fetch('/api/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, slug, imageBase64 })
+        body: JSON.stringify({ name, slug, price: parseFloat(price), imageBase64 })
       });
       
       if (res.ok) {
+        invalidateCache('/api/categories');
         setName('');
         setSlug('');
+        setPrice('');
         setImageBase64(null);
         e.target.reset();
         fetchCategories();
@@ -78,6 +79,7 @@ export default function AdminCategoriesPage() {
         method: 'DELETE'
       });
       if (res.ok) {
+        invalidateCache('/api/categories');
         fetchCategories();
       } else {
         alert('Failed to delete category');
@@ -96,7 +98,7 @@ export default function AdminCategoriesPage() {
       <div className={styles.formCard}>
         <h2 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Add New Category</h2>
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
             <div className={styles.formGroup}>
               <label>Category Name</label>
               <input 
@@ -115,6 +117,16 @@ export default function AdminCategoriesPage() {
                 value={slug} 
                 onChange={e => setSlug(e.target.value)} 
                 placeholder="e.g. t-shirts"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Base Price (₹)</label>
+              <input 
+                type="number" 
+                className={styles.input} 
+                value={price} 
+                onChange={e => setPrice(e.target.value)} 
+                placeholder="e.g. 999"
               />
             </div>
           </div>
@@ -144,7 +156,10 @@ export default function AdminCategoriesPage() {
               <img src={`/api/images/${cat.imageId}`} alt={cat.name} className={styles.image} />
             </div>
             <div className={styles.cardContent}>
-              <span className={styles.cardTitle}>{cat.name}</span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span className={styles.cardTitle}>{cat.name}</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>Base Price: ₹{cat.price || '999'}</span>
+              </div>
               <button className={styles.deleteBtn} onClick={() => handleDelete(cat.id)} title="Delete">
                 <Trash2 size={18} />
               </button>

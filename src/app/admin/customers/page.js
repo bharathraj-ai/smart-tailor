@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Users, Search, Mail, Phone, MapPin, ShoppingBag } from 'lucide-react';
+import { cachedFetch } from '@/lib/apiCache';
 
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState([]);
@@ -14,11 +15,8 @@ export default function AdminCustomersPage() {
 
   const fetchCustomers = async () => {
     try {
-      const res = await fetch('/api/admin/customers');
-      if (res.ok) {
-        const data = await res.json();
-        setCustomers(data.customers || []);
-      }
+      const data = await cachedFetch('/api/admin/customers', {}, 300);
+      setCustomers(data.customers || []);
     } catch (err) {
       console.error(err);
     } finally {

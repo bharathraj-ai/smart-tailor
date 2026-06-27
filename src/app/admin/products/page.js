@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Package, Search, Plus, Trash2, Edit } from 'lucide-react';
+import { cachedFetch } from '@/lib/apiCache';
 
 export default function AdminProductsPage() {
   const [categories, setCategories] = useState([]);
@@ -13,11 +14,8 @@ export default function AdminProductsPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/categories');
-      if (res.ok) {
-        const data = await res.json();
-        setCategories(data.categories || []);
-      }
+      const data = await cachedFetch('/api/categories', {}, 300);
+      setCategories(data.categories || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -69,7 +67,7 @@ export default function AdminProductsPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {categories.map(cat => (
-                <tr key={cat.id} className="hover:bg-muted/30 transition-colors">
+                <tr key={cat._id} className="hover:bg-muted/30 transition-colors">
                   <td className="px-6 py-4">
                     <img src={`/api/images/${cat.imageId}`} alt={cat.name} className="w-12 h-12 rounded-lg object-cover" />
                   </td>

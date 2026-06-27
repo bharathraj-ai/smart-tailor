@@ -38,11 +38,11 @@
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 2rem;
-  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
   height: fit-content;
 }
 
@@ -53,7 +53,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .userInfo {
@@ -86,18 +86,20 @@
 .infoItem svg {
   color: var(--accent);
   margin-top: 0.25rem;
+  flex-shrink: 0;
 }
 
 .infoLabel {
   font-size: 0.875rem;
   margin-bottom: 0.25rem;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .infoValue {
   font-size: 1.125rem;
-  color: #fff;
+  color: var(--text-primary);
   font-weight: 500;
+  word-break: break-word;
 }
 
 .measurementList {
@@ -111,9 +113,10 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-primary);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  gap: 0.75rem;
 }
 
 .orderList {
@@ -123,15 +126,16 @@
 }
 
 .orderCard {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
   transition: all 0.2s;
 }
 
 .orderCard:hover {
-  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
   transform: translateY(-2px);
 }
 
@@ -140,12 +144,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .orderId {
   font-family: monospace;
   font-weight: 600;
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .statusBadge {
@@ -155,6 +161,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .status-OrderReceived { background: rgba(217, 119, 6, 0.15); color: #fbbf24; }
@@ -165,12 +172,14 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .orderItem {
   font-size: 1.125rem;
   font-weight: 500;
-  color: #fff;
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
 }
 
@@ -185,8 +194,61 @@
   color: var(--accent);
 }
 
+/* ─── Responsive ─── */
 @media (max-width: 768px) {
+  .profileContainer {
+    padding: 2.5rem 1.25rem;
+  }
   .grid {
     grid-template-columns: 1fr;
+  }
+  .title {
+    font-size: 2.25rem;
+  }
+  .card {
+    padding: 1.5rem;
+  }
+  .orderCard:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .profileContainer {
+    padding: 2rem 1rem;
+  }
+  .title {
+    font-size: 1.75rem;
+  }
+  .subtitle {
+    font-size: 1rem;
+  }
+  .sectionTitle {
+    font-size: 1.25rem;
+  }
+  .card {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+  .avatar {
+    width: 64px;
+    height: 64px;
+    font-size: 1.5rem;
+  }
+  .infoValue {
+    font-size: 1rem;
+  }
+  .orderCard {
+    padding: 1rem;
+  }
+  .orderItem {
+    font-size: 1rem;
+  }
+  .orderAmount {
+    font-size: 1.1rem;
+  }
+  .measurementItem {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
