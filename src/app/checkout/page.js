@@ -1,16 +1,54 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { CreditCard, Banknote, MapPin, Store, CheckCircle } from 'lucide-react';
 import styles from './checkout.module.css';
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const categorySlug = searchParams.get('category') || '';
+
   const [deliveryType, setDeliveryType] = useState('home');
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [categoryName, setCategoryName] = useState('Custom Garment');
+  const [categoryPrice, setCategoryPrice] = useState(999);
+
+  // Redirect to login if user is not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      const callbackPath = categorySlug 
+        ? `/checkout?category=${categorySlug}`
+        : '/checkout';
+      router.push(`/login?callbackUrl=${encodeURIComponent(callbackPath)}`);
+    }
+  }, [status, router, categorySlug]);
+
+  useEffect(() => {
+    if (categorySlug) {
+      fetch('/api/categories')
+        .then(res => res.json())
+        .then(data => {
+          const cat = data.categories?.find(c => c.slug === categorySlug);
+          if (cat) {
+            setCategoryName(cat.name);
+            setCategoryPrice(cat.price || 999);
+          } else {
+            // Fallback: capitalize words from slug
+            setCategoryName(categorySlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
+            setCategoryPrice(999);
+          }
+        })
+        .catch(err => console.error(err));
+    }
+  }, [categorySlug]);
+
+  const totalAmount = categoryPrice + 300;
 
   const handleCheckout = async (e) => {
     e.preventDefault();
@@ -20,7 +58,12 @@ export default function CheckoutPage() {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deliveryType, paymentMethod }),
+        body: JSON.stringify({ 
+          deliveryType, 
+          paymentMethod,
+          category: categoryName,
+          totalAmount: totalAmount
+        }),
       });
 
       if (!res.ok) {
@@ -39,6 +82,14 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
+
+  if (status === 'loading' || status === 'unauthenticated') {
+    return (
+      <div className={`container ${styles.checkoutContainer}`} style={{ textAlign: 'center', padding: '6rem 2rem' }}>
+        <p style={{ color: 'var(--text-secondary)' }}>Verifying authentication status...</p>
+      </div>
+    );
+  }
 
   if (isSuccess) {
     return (
@@ -106,7 +157,7 @@ export default function CheckoutPage() {
 
           <div className={styles.formActions}>
             <button type="submit" className={`btn-primary ${styles.submitBtn}`} disabled={isProcessing}>
-              {isProcessing ? 'Processing...' : `Place Order • ₹1,299`}
+              {isProcessing ? 'Processing...' : `Place Order • ₹${totalAmount.toLocaleString()}`}
             </button>
           </div>
         </form>
@@ -116,8 +167,8 @@ export default function CheckoutPage() {
             <h2 className={styles.sectionTitle}>Order Summary</h2>
             <div className={styles.summaryItems}>
               <div className={styles.summaryItem}>
-                <span>Custom Shirt (Cotton)</span>
-                <span>₹999</span>
+                <span>{categoryName}</span>
+                <span>₹{categoryPrice.toLocaleString()}</span>
               </div>
               <div className={styles.summaryItem}>
                 <span>Stitching Charges</span>
@@ -132,11 +183,23 @@ export default function CheckoutPage() {
             </div>
             <div className={styles.summaryTotal}>
               <span>Total</span>
-              <span className={styles.totalAmount}>₹1,299</span>
+              <span className={styles.totalAmount}>₹{totalAmount.toLocaleString()}</span>
             </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className={`container ${styles.checkoutContainer}`} style={{ textAlign: 'center', padding: '6rem 2rem' }}>
+        <p style={{ color: 'var(--text-secondary)' }}>Loading checkout...</p>
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { CreditCard, Search, IndianRupee, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { cachedFetch } from '@/lib/apiCache';
 
 const paymentStatusColors = {
   'Pending': 'bg-yellow-500/20 text-yellow-400',
@@ -22,11 +23,9 @@ export default function AdminPaymentsPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('/api/tailor/orders');
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data.orders || []);
-      }
+      // Uses shared cache key — already warm if orders page was visited.
+      const data = await cachedFetch('/api/tailor/orders', {}, 120);
+      setOrders(data.orders || []);
     } catch (err) {
       console.error(err);
     } finally {

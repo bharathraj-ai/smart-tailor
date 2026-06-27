@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Star, MessageSquare, ThumbsUp, Search } from 'lucide-react';
+import { cachedFetch } from '@/lib/apiCache';
 
 export default function AdminReviewsPage() {
   const [orders, setOrders] = useState([]);
@@ -14,12 +15,9 @@ export default function AdminReviewsPage() {
 
   const fetchDeliveredOrders = async () => {
     try {
-      const res = await fetch('/api/tailor/orders');
-      if (res.ok) {
-        const data = await res.json();
-        const delivered = (data.orders || []).filter(o => o.status === 'Delivered');
-        setOrders(delivered);
-      }
+      const data = await cachedFetch('/api/tailor/orders', {}, 120);
+      const delivered = (data.orders || []).filter(o => o.status === 'Delivered');
+      setOrders(delivered);
     } catch (err) {
       console.error(err);
     } finally {

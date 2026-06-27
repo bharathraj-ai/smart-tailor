@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import styles from './order.module.css';
 import { Package, Scissors, CheckCircle, Truck, Store } from 'lucide-react';
 import Link from 'next/link';
-import prisma from '@/lib/db';
+import { getDb } from '@/lib/db';
 
 
 export default async function OrderDetailsPage({ params }) {
@@ -16,21 +16,49 @@ export default async function OrderDetailsPage({ params }) {
   const resolvedParams = await params;
   const { id } = resolvedParams;
 
+  const db = await getDb();
   let order;
+
   if (id === 'latest') {
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    const { data: user } = await db
+      .from('users')
+      .select('*')
+      .eq('email', session.user.email)
+      .single();
+
     if (user) {
-      order = await prisma.order.findFirst({
-        where: { userId: user.id },
-        orderBy: { createdAt: 'desc' },
-        include: { items: true }
-      });
+      const { data: latestOrder } = await db
+        .from('orders')
+        .select('*')
+        .eq('userId', user.id)
+        .order('createdAt', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      order = latestOrder;
     }
   } else {
-    order = await prisma.order.findUnique({
-      where: { id },
-      include: { items: true }
-    });
+    try {
+      const { data: foundOrder } = await db
+        .from('orders')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      order = foundOrder;
+    } catch {
+      order = null;
+    }
+  }
+
+  if (order) {
+    // Get items for the order
+    const { data: itemsData } = await db
+      .from('orderItems')
+      .select('*')
+      .eq('orderId', order.id);
+
+    order.items = itemsData || [];
   }
 
   if (!order) {
@@ -43,13 +71,13 @@ export default async function OrderDetailsPage({ params }) {
   }
 
   const steps = [
-    { label: 'Order Received', icon: Package, status: 'Order Received' },
-    { label: 'In Stitching', icon: Scissors, status: 'In Stitching' },
-    { label: 'Ready for Delivery', icon: CheckCircle, status: 'Ready for Delivery' },
-    { label: order.deliveryType === 'Pickup' ? 'Picked Up' : 'Delivered', icon: order.deliveryType === 'Pickup' ? Store : Truck, status: 'Delivered' }
+    { label: 'Order Received', icon: Package, statuses: ['Order Received', 'Order Confirmed'] },
+    { label: 'In Stitching', icon: Scissors, statuses: ['In Stitching', 'Quality Check'] },
+    { label: 'Ready for Delivery', icon: CheckCircle, statuses: ['Ready for Delivery'] },
+    { label: order.deliveryType === 'Pickup' ? 'Picked Up' : 'Delivered', icon: order.deliveryType === 'Pickup' ? Store : Truck, statuses: ['Delivered'] }
   ];
 
-  const currentStepIndex = steps.findIndex(s => s.status === order.status);
+  const currentStepIndex = steps.findIndex(s => s.statuses.includes(order.status));
 
   return (
     <div className={styles.container}>

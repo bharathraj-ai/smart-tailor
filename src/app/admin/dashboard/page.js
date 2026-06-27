@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { cachedFetch } from '@/lib/apiCache';
 import { motion } from 'framer-motion';
 import {
   DollarSign,
@@ -55,11 +56,9 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch('/api/admin/stats');
-      if (res.ok) {
-        const json = await res.json();
-        setData(json);
-      }
+      // Cache for 5 minutes — avoids hitting the DB on every page visit.
+      const json = await cachedFetch('/api/admin/stats', {}, 300);
+      setData(json);
     } catch (err) {
       console.error(err);
     } finally {

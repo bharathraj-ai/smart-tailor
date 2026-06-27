@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from "@/lib/db";
-import { getDb } from '@/lib/mongo';
-import { ObjectId } from 'mongodb';
+import { getDb } from '@/lib/db';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -12,25 +10,45 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
+    const db = await getDb();
 
-    const category = await prisma.category.findUnique({ where: { id } });
-    if (!category) {
+    if (!id) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
+
+    const { data: category, error: selectError } = await db
+      .from('categories')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (selectError || !category) {
       return NextResponse.json({ error: 'Category not found' }, { status: 404 });
     }
 
-    // Delete image from Mongo
+    // Delete image from database
     if (category.imageId) {
-      const db = await getDb();
       try {
-        await db.collection('images').deleteOne({ _id: new ObjectId(category.imageId) });
+        await db
+          .from('images')
+          .delete()
+          .eq('id', category.imageId);
       } catch (err) {
-        console.error('Error deleting image from Mongo:', err);
+        console.error('Error deleting image:', err);
       }
     }
 
-    // Delete category from Postgres
-    await prisma.category.delete({ where: { id } });
+    // Delete category
+    const { error: deleteError } = await db
+      .from('categories')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      throw deleteError;
+    }
 
     return NextResponse.json({ message: 'Category deleted' }, { status: 200 });
   } catch (error) {

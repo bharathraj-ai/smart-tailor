@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from "@/lib/db";
+import { getDb } from '@/lib/db';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -10,25 +10,56 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Total revenue
-    const orders = await prisma.order.findMany({
-      include: {
-        user: { select: { name: true } },
-        items: true
-      },
-      orderBy: { createdAt: 'desc' }
+    const db = await getDb();
+
+    // Parallel fetch: orders + customer count at the same time
+    const [ordersResult, customerResult] = await Promise.all([
+      db.from('orders').select('*').order('createdAt', { ascending: false }),
+      db.from('users').select('*', { count: 'exact', head: true }).eq('role', 'customer'),
+    ]);
+
+    const orders = ordersResult.data || [];
+    const customerCount = customerResult.count || 0;
+
+    if (orders.length === 0) {
+      return NextResponse.json({
+        totalRevenue: 0, totalOrders: 0, customerCount, inStitching: 0,
+        recentOrders: [], revenueData: [], categoryData: [],
+      }, { status: 200, headers: { 'Cache-Control': 'private, max-age=120' } });
+    }
+
+    // Batch fetch users and items in 2 queries (eliminates N+1)
+    const userIds = [...new Set(orders.map(o => o.userId).filter(Boolean))];
+    const orderIds = orders.map(o => o.id);
+
+    const [usersResult, itemsResult] = await Promise.all([
+      db.from('users').select('id, name').in('id', userIds),
+      db.from('orderItems').select('*').in('orderId', orderIds),
+    ]);
+
+    const usersMap = {};
+    (usersResult.data || []).forEach(u => { usersMap[u.id] = u; });
+
+    const itemsByOrder = {};
+    (itemsResult.data || []).forEach(item => {
+      if (!itemsByOrder[item.orderId]) itemsByOrder[item.orderId] = [];
+      itemsByOrder[item.orderId].push(item);
     });
+
+    // Assemble enriched orders
+    for (const order of orders) {
+      order.user = usersMap[order.userId] ? { name: usersMap[order.userId].name } : null;
+      order.items = itemsByOrder[order.id] || [];
+    }
 
     const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
     const totalOrders = orders.length;
-    const customerCount = await prisma.user.count({ where: { role: 'customer' } });
 
     // Status counts
     const statusCounts = {};
     orders.forEach(o => {
       statusCounts[o.status] = (statusCounts[o.status] || 0) + 1;
     });
-
     const inStitching = (statusCounts['In Stitching'] || 0) + (statusCounts['Quality Check'] || 0);
 
     // Recent orders (top 5)
@@ -71,14 +102,12 @@ export async function GET() {
       .slice(0, 5);
 
     return NextResponse.json({
-      totalRevenue,
-      totalOrders,
-      customerCount,
-      inStitching,
-      recentOrders,
-      revenueData,
-      categoryData,
-    }, { status: 200 });
+      totalRevenue, totalOrders, customerCount, inStitching,
+      recentOrders, revenueData, categoryData,
+    }, {
+      status: 200,
+      headers: { 'Cache-Control': 'private, max-age=120' },
+    });
   } catch (error) {
     console.error('Error fetching admin stats:', error);
     return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });

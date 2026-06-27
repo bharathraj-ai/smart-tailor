@@ -13,25 +13,25 @@
     --accent-hover: #b45309;
     --border-color: #e2e8f0;
     
-    /* Tailwind / Shadcn UI Variables */
-    --background: #0f172a;
-    --foreground: #f8fafc;
-    --card: #1e293b;
-    --card-foreground: #f8fafc;
-    --popover: #1e293b;
-    --popover-foreground: #f8fafc;
+    /* Tailwind / Shadcn UI Variables - Light Mode Default */
+    --background: #fafafa;
+    --foreground: #1e293b;
+    --card: #ffffff;
+    --card-foreground: #1e293b;
+    --popover: #ffffff;
+    --popover-foreground: #1e293b;
     --primary: #d97706;
     --primary-foreground: #ffffff;
-    --secondary: #334155;
-    --secondary-foreground: #f8fafc;
-    --muted: #334155;
-    --muted-foreground: #94a3b8;
-    --accent-tailwind: #334155;
-    --accent-foreground: #f8fafc;
+    --secondary: #f1f5f9;
+    --secondary-foreground: #1e293b;
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b;
+    --accent-tailwind: #f1f5f9;
+    --accent-foreground: #1e293b;
     --destructive: #ef4444;
-    --destructive-foreground: #f8fafc;
-    --border: #334155;
-    --input: #334155;
+    --destructive-foreground: #ffffff;
+    --border: #cbd5e1;
+    --input: #cbd5e1;
     --ring: #d97706;
     
     /* Typography */
@@ -60,7 +60,28 @@
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
     --border-color: #334155;
+    
+    /* Tailwind / Shadcn UI Variables - Dark Mode Override */
+    --background: #0f172a;
+    --foreground: #f8fafc;
+    --card: #1e293b;
+    --card-foreground: #f8fafc;
+    --popover: #1e293b;
+    --popover-foreground: #f8fafc;
+    --secondary: #334155;
+    --secondary-foreground: #f8fafc;
+    --muted: #334155;
+    --muted-foreground: #94a3b8;
+    --accent-tailwind: #334155;
+    --accent-foreground: #f8fafc;
+    --border: #334155;
+    --input: #334155;
   }
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 html, body {
@@ -97,6 +118,11 @@ button {
   font-family: inherit;
 }
 
+img {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Utilities */
 .container {
   width: 100%;
@@ -124,6 +150,10 @@ button {
   box-shadow: var(--shadow-md);
 }
 
+.btn-primary:active {
+  transform: translateY(0);
+}
+
 .btn-secondary {
   display: inline-flex;
   align-items: center;
@@ -140,6 +170,10 @@ button {
 .btn-secondary:hover {
   background-color: var(--bg-secondary);
   border-color: var(--text-primary);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
 }
 
 .section {
@@ -180,7 +214,10 @@ button {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   font-family: inherit;
+  font-size: 1rem;
   transition: border-color var(--transition-fast);
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .form-input:focus {
@@ -201,4 +238,64 @@ button {
 .card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
+}
+
+/* ─── Responsive Global Overrides ─── */
+@media (max-width: 992px) {
+  .section {
+    padding: 3.5rem 0;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --nav-height: 64px;
+  }
+
+  body {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  .container {
+    padding: 0 1.25rem;
+  }
+
+  .section {
+    padding: 3rem 0;
+  }
+
+  .form-input {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    min-height: 48px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.875rem 1.25rem;
+    min-height: 48px;
+  }
+
+  .card {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .section {
+    padding: 2.5rem 0;
+  }
+
+  .card {
+    padding: 1.25rem;
+  }
 }

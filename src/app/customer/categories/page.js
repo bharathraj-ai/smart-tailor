@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Search, Filter, ShoppingBag, Eye, Scissors } from 'lucide-react';
+import { Heart, Search, Filter, ShoppingBag, Eye, Scissors, Star } from 'lucide-react';
 import Image from 'next/image';
 
 const categories = ['All', 'Women', 'Men', 'Kids', 'Accessories'];

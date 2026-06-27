@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -7,6 +8,11 @@ import Footer from '@/components/layout/Footer';
 export default function LayoutWrapper({ children }) {
   const pathname = usePathname();
   const isAdminPage = pathname?.startsWith('/admin');
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [pathname]);
 
   if (isAdminPage) {
     return (

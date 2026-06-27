@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, IndianRupee, ShoppingBag, Users, Calendar, Download } from 'lucide-react';
+import { cachedFetch } from '@/lib/apiCache';
 
 export default function AdminReportsPage() {
   const [orders, setOrders] = useState([]);
@@ -14,11 +15,9 @@ export default function AdminReportsPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('/api/tailor/orders');
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data.orders || []);
-      }
+      // Shared cache key — already populated if orders page was visited first.
+      const data = await cachedFetch('/api/tailor/orders', {}, 120);
+      setOrders(data.orders || []);
     } catch (err) {
       console.error(err);
     }
@@ -26,11 +25,8 @@ export default function AdminReportsPage() {
 
   const fetchCustomers = async () => {
     try {
-      const res = await fetch('/api/admin/customers');
-      if (res.ok) {
-        const data = await res.json();
-        setCustomers(data.customers || []);
-      }
+      const data = await cachedFetch('/api/admin/customers', {}, 300);
+      setCustomers(data.customers || []);
     } catch (err) {
       console.error(err);
     }

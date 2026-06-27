@@ -70,3 +70,39 @@
   padding: 0.75rem;
   border-radius: 8px;
 }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .authContainer {
+    padding: 3rem 1.25rem;
+  }
+  .authCard {
+    padding: 2rem 1.5rem;
+    border-radius: 12px;
+  }
+  .title {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .authContainer {
+    padding: 2rem 1rem;
+    align-items: flex-start;
+    padding-top: 3rem;
+  }
+  .authCard {
+    padding: 1.75rem 1.25rem;
+    box-shadow: var(--shadow-lg);
+  }
+  .title {
+    font-size: 1.5rem;
+  }
+  .formGroup {
+    margin-bottom: 1.25rem;
+  }
+  .submitBtn {
+    padding: 0.875rem;
+    font-size: 1rem;
+  }
+}

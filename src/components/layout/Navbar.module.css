@@ -31,6 +31,7 @@
   color: var(--accent);
 }
 
+/* Desktop Nav Links */
 .navLinks {
   display: flex;
   gap: 2rem;
@@ -41,6 +42,7 @@
   font-weight: 500;
   color: var(--text-secondary);
   position: relative;
+  transition: color var(--transition-fast);
 }
 
 .navLink:hover {
@@ -62,7 +64,14 @@
   width: 100%;
 }
 
+/* Nav Actions */
 .navActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.authActions {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -84,8 +93,133 @@
   color: var(--text-primary);
 }
 
+.signInBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile Sign Out */
+.mobileSignOut {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.mobileSignOut:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+}
+
+/* Mobile Bottom Navigation Bar */
+.bottomNav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  z-index: 100;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 0.5rem;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+  padding-bottom: env(safe-area-inset-bottom); /* iOS home bar safe area support */
+}
+
+.bottomTab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  color: var(--text-secondary);
+  gap: 2px;
+  transition: color var(--transition-fast);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+}
+
+.bottomTab:hover {
+  color: var(--text-primary);
+}
+
+/* Capsule / Pill icon highlight (WhatsApp / Material Design 3 style) */
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 20px;
+  border-radius: 9999px;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.tabLabel {
+  font-size: 0.725rem;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+/* Active tab style */
+.bottomTabActive {
+  color: var(--accent);
+}
+
+.bottomTabActive .iconWrapper {
+  background-color: rgba(217, 119, 6, 0.15); /* Pill color using primary theme color */
+  color: var(--accent);
+}
+
+.bottomTabActive .tabLabel {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Dark mode adjust for active state pill */
+@media (prefers-color-scheme: dark) {
+  .bottomTabActive .iconWrapper {
+    background-color: rgba(217, 119, 6, 0.25);
+  }
+}
+
+/* ─── Responsive ─── */
 @media (max-width: 768px) {
   .navLinks {
     display: none;
+  }
+
+  .authActions {
+    display: none;
+  }
+
+  .signInBtn {
+    display: none;
+  }
+
+  .mobileSignOut {
+    display: flex;
+  }
+
+  .bottomNav {
+    display: flex;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo span {
+    font-size: 1.25rem;
+  }
+
+  .header {
+    height: 64px;
   }
 }

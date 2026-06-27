@@ -1,26 +1,46 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongo';
-import { ObjectId } from 'mongodb';
+import { getDb } from '@/lib/db';
+
+// In-memory server-side image cache — survives across requests in the same
+// process. Images are immutable after upload, so this is safe to cache
+// indefinitely until process restart.
+const imageCache = new Map();
+const MAX_CACHE_SIZE = 50; // Limit to prevent unbounded memory growth
 
 export async function GET(req, { params }) {
   try {
-    const { id } = params;
-    const db = await getDb();
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     
-    let objectId;
-    try {
-      objectId = new ObjectId(id);
-    } catch (err) {
+    if (!id) {
       return NextResponse.json({ error: 'Invalid Image ID' }, { status: 400 });
     }
 
-    const imageDoc = await db.collection('images').findOne({ _id: objectId });
+    // 1. Check in-memory cache first (instant — no DB call)
+    if (imageCache.has(id)) {
+      const cached = imageCache.get(id);
+      return new NextResponse(cached.buffer, {
+        headers: {
+          'Content-Type': cached.mimeType,
+          'Cache-Control': 'public, max-age=604800, immutable',
+          'X-Cache': 'HIT',
+        }
+      });
+    }
 
-    if (!imageDoc || !imageDoc.data) {
+    // 2. Cache miss — fetch from DB
+    const db = await getDb();
+
+    const { data: imageDoc, error } = await db
+      .from('images')
+      .select('data')  // Only select the data column we need
+      .eq('id', id)
+      .single();
+
+    if (error || !imageDoc || !imageDoc.data) {
       return NextResponse.json({ error: 'Image not found' }, { status: 404 });
     }
 
-    // data could be a base64 string starting with "data:image/jpeg;base64,..."
     const base64Data = imageDoc.data;
     const matches = base64Data.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
     
@@ -31,10 +51,18 @@ export async function GET(req, { params }) {
     const mimeType = matches[1];
     const imageBuffer = Buffer.from(matches[2], 'base64');
 
+    // 3. Store in memory cache (evict oldest if full)
+    if (imageCache.size >= MAX_CACHE_SIZE) {
+      const firstKey = imageCache.keys().next().value;
+      imageCache.delete(firstKey);
+    }
+    imageCache.set(id, { buffer: imageBuffer, mimeType });
+
     return new NextResponse(imageBuffer, {
       headers: {
         'Content-Type': mimeType,
-        'Cache-Control': 'public, max-age=86400'
+        'Cache-Control': 'public, max-age=604800, immutable',
+        'X-Cache': 'MISS',
       }
     });
 

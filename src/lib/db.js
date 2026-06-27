@@ -1,19 +1,14 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import { createClient } from '@supabase/supabase-js';
 
-const globalForPrisma = globalThis;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-if (!globalForPrisma._pool) {
-  globalForPrisma._pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+export const db = supabase;
+
+export async function getDb() {
+  return supabase;
 }
 
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    adapter: new PrismaPg(globalForPrisma._pool),
-  });
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
-
-export default prisma;
+export default supabase;

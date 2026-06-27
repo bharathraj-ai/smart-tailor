@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Ruler, Search, User } from 'lucide-react';
+import { cachedFetch } from '@/lib/apiCache';
 
 export default function AdminMeasurementsPage() {
   const [measurements, setMeasurements] = useState([]);
@@ -14,11 +15,8 @@ export default function AdminMeasurementsPage() {
 
   const fetchMeasurements = async () => {
     try {
-      const res = await fetch('/api/admin/measurements');
-      if (res.ok) {
-        const data = await res.json();
-        setMeasurements(data.measurements || []);
-      }
+      const data = await cachedFetch('/api/admin/measurements', {}, 300);
+      setMeasurements(data.measurements || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -85,11 +83,24 @@ export default function AdminMeasurementsPage() {
               {m.neckSize && <div><span className="text-muted-foreground">Neck:</span> <span className="text-foreground font-medium">{m.neckSize}"</span></div>}
               {m.height && <div><span className="text-muted-foreground">Height:</span> <span className="text-foreground font-medium">{m.height}"</span></div>}
             </div>
-            {m.customNotes && (
-              <p className="mt-3 text-xs text-muted-foreground border-t border-border pt-3">
-                <strong>Notes:</strong> {m.customNotes}
-              </p>
-            )}
+            {m.customNotes && (() => {
+              const parts = m.customNotes.split('|||');
+              const noteText = parts[0];
+              const imageBase64 = parts[1];
+              return (
+                <div className="mt-3 text-xs text-muted-foreground border-t border-border pt-3">
+                  {noteText && <p><strong>Notes:</strong> {noteText}</p>}
+                  {imageBase64 && (
+                    <div className="mt-2">
+                      <p className="font-semibold mb-1 text-foreground">Reference Image:</p>
+                      <a href={imageBase64} target="_blank" rel="noopener noreferrer" className="inline-block">
+                        <img src={imageBase64} alt="Reference design" className="max-w-[120px] max-h-[120px] object-cover rounded-lg border border-border" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             <p className="mt-3 text-xs text-muted-foreground">Created: {new Date(m.createdAt).toLocaleDateString()}</p>
           </div>
         ))}

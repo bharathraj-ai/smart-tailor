@@ -1,11 +1,31 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, Scissors, Ruler, Truck, Star, Shield, Clock, ChevronRight } from 'lucide-react';
 import styles from './page.module.css';
-import heroImg from '../images/images.jpg';
+import { getDb } from '@/lib/db';
 
-export default function Home() {
+// Cache the page for 24 hours (86400 seconds) so it doesn't hit the database on every reload
+export const revalidate = 86400;
+
+export default async function Home() {
+  // Fetch hero images from database
+  const db = await getDb();
+  const { data: settings } = await db
+    .from('siteSettings')
+    .select('*')
+    .eq('key', 'heroImages')
+    .single();
+  const heroImages = settings?.images || [];
+  // Build the preload URL for the hero image (helps browser start downloading immediately)
+  const heroImageUrl = heroImages.length > 0 ? `/api/images/${heroImages[0].imageId}` : null;
+
   return (
-    <div className={styles.page}>
+    <>
+      {/* Preload hero image to reduce LCP */}
+      {heroImageUrl && (
+        <link rel="preload" href={heroImageUrl} as="image" fetchPriority="high" />
+      )}
+      <div className={styles.page}>
       {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles.heroBgGlow}></div>
@@ -46,11 +66,22 @@ export default function Home() {
           <div className={styles.heroImageContainer}>
             <div className={styles.heroImagePattern}></div>
             <div className={styles.heroImagePlaceholder}>
-              <img 
-                src={heroImg.src}
-                alt="Tailor working on a suit" 
-                className={styles.heroImage}
-              />
+              {heroImages.length > 0 ? (
+                <Image 
+                  src={`/api/images/${heroImages[0].imageId}`}
+                  alt={heroImages[0].label || "Custom tailoring"}
+                  className={styles.heroImage}
+                  fill
+                  sizes="(max-width: 992px) 100vw, 50vw"
+                  priority
+                  fetchPriority="high"
+                />
+              ) : (
+                <div className={styles.heroFallback}>
+                  <Scissors size={48} />
+                  <p>Upload a hero image from the admin panel</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -154,5 +185,6 @@ export default function Home() {
         </div>
       </section>
     </div>
+    </>
   );
 }

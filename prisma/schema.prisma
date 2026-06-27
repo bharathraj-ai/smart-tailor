@@ -1,30 +1,34 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
+  id        String   @id @default(cuid())
+  name      String?
   email     String   @unique
-  username  String?  @unique
-  phone     String   @unique
-  role      String   @default("customer") // 'customer' or 'tailor'
   password  String?
+  phone     String?  @unique
+  role      String   @default("customer")
   address   String?
   createdAt DateTime @default(now())
 
-  orders       Order[]
   measurements Measurement[]
+  orders       Order[]
 }
 
 model Measurement {
-  id           String   @id @default(uuid())
+  id           String   @id @default(cuid())
   userId       String
-  name         String   @default("My Measurements")
+  user         User     @relation(fields: [userId], references: [id])
+  name         String
   chest        Float?
   waist        Float?
   hip          Float?
@@ -32,45 +36,54 @@ model Measurement {
   sleeveLength Float?
   neckSize     Float?
   height       Float?
-  customNotes  String?
   createdAt    DateTime @default(now())
 
-  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items  OrderItem[]
+  orderItems   OrderItem[]
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  image       String?
+  createdAt   DateTime @default(now())
 }
 
 model Order {
-  id            String   @id @default(uuid())
+  id            String   @id @default(cuid())
   userId        String
-  status        String   @default("Order Received")
+  user          User     @relation(fields: [userId], references: [id])
+  status        String
   paymentMethod String
-  paymentStatus String   @default("Pending")
+  paymentStatus String
   totalAmount   Float
   deliveryType  String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items OrderItem[]
+  items         OrderItem[]
 }
 
 model OrderItem {
-  id             String  @id @default(uuid())
-  orderId        String
-  category       String
-  fabric         String?
-  designRefImage String?
-  measurementId  String?
-
-  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  measurement Measurement? @relation(fields: [measurementId], references: [id])
+  id            String   @id @default(cuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id])
+  category      String
+  measurementId String?
+  measurement   Measurement? @relation(fields: [measurementId], references: [id])
+  createdAt     DateTime @default(now())
 }
 
-model Category {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  slug      String   @unique
-  imageId   String
+model Image {
+  id        String   @id @default(cuid())
+  data      String   // Base64 text
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  images    Json?    // Storing the image array
+  createdAt DateTime @default(now())
 }
