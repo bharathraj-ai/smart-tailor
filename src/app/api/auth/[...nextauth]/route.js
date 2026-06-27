@@ -79,15 +79,13 @@ export const authOptions = {
   }
 };
 
-const nextAuthHandler = NextAuth(authOptions);
-
 const handler = async (req, ctx) => {
   const host = req.headers.get('host');
   if (host) {
     const protocol = req.headers.get('x-forwarded-proto') || 'http';
     process.env.NEXTAUTH_URL = `${protocol}://${host}`;
   }
-  return nextAuthHandler(req, ctx);
+  return NextAuth(authOptions)(req, ctx);
 };
 
 export { handler as GET, handler as POST };

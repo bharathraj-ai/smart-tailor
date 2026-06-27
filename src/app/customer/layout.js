@@ -54,7 +54,7 @@ export default function CustomerLayout({ children }) {
       >
         <div className="p-6 flex items-center justify-between">
           <Link href="/customer/dashboard" className="text-xl font-bold text-primary flex items-center gap-2">
-            <span>SmartTailor</span>
+            <span>Ajay Tailor</span>
           </Link>
           <button className="lg:hidden text-muted-foreground hover:text-foreground" onClick={() => setIsSidebarOpen(false)}>
             <X size={20} />

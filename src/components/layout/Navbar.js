@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { Scissors, User, LogOut, Home, Grid, Phone, Package, LayoutDashboard, LogIn } from 'lucide-react';
+import { Scissors, User, LogOut, Home, Grid, Phone, Package, LayoutDashboard, LogIn, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/components/ThemeProvider';
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const isAdminPage = pathname?.startsWith('/admin');
 
@@ -79,7 +81,7 @@ export default function Navbar() {
         <div className={`container ${styles.navContainer}`}>
           <Link href="/" className={styles.logo}>
             <Scissors className={styles.logoIcon} />
-            <span>SmartTailor</span>
+            <span>Ajay Tailor</span>
           </Link>
           
           {/* Desktop Nav */}
@@ -88,6 +90,9 @@ export default function Navbar() {
           </nav>
 
           <div className={styles.navActions}>
+            <button onClick={toggleTheme} className={styles.iconBtn} title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}>
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
             {session ? (
               <div className={styles.authActions}>
                 <Link href="/profile" className={styles.iconBtn}>
