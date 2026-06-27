@@ -120,7 +120,7 @@ export default function AdminOrdersPage() {
         <select
           value={filterStatus}
           onChange={e => setFilterStatus(e.target.value)}
-          className="px-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
+          className="self-start w-auto min-w-[150px] px-3 py-2 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
         >
           <option value="all">All Status</option>
           <option value="Order Received">Order Received</option>

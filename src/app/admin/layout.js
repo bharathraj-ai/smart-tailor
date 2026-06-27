@@ -149,7 +149,7 @@ export default function AdminLayout({ children }) {
         </main>
 
         {/* Admin Mobile Bottom Navigation Bar (WhatsApp/Material style) */}
-        <nav className="lg:hidden fixed bottom-0 left-0 w-full h-16 bg-slate-950 border-t border-border z-40 flex items-center justify-around px-2 shadow-lg pb-safe">
+        <nav className="lg:hidden fixed bottom-0 left-0 w-full h-16 bg-background border-t border-border z-40 flex items-center justify-around px-2 shadow-lg pb-safe">
           {adminBottomTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;

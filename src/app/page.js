@@ -55,7 +55,7 @@ export default async function Home() {
                 </div>
                 <div className={styles.trustItem}>
                   <Clock size={16} className={styles.trustIcon} />
-                  <span>7-Day Delivery</span>
+                  <span>Quick Delivery</span>
                 </div>
                 <div className={styles.trustItem}>
                   <Ruler size={16} className={styles.trustIcon} />

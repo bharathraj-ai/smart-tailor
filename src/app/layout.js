@@ -13,6 +13,7 @@ const geistSans = Geist({
 
 
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: "Ajay tailor | Custom Tailoring Platform",
   description: "Order custom-stitched clothes online while working with local tailoring shops. Premium fabrics, expert craftsmanship, perfect fit — every time.",
   keywords: ["custom tailoring", "online tailor", "custom clothes", "stitching", "tailoring platform", "measurements"],
