@@ -19,13 +19,15 @@ import {
   Menu,
   X,
   Image as ImageIcon,
-  Home
+  Home,
+  Truck
 } from 'lucide-react';
 
 const sidebarItems = [
   { icon: Home, label: 'Home', href: '/' },
   { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/dashboard' },
   { icon: ShoppingBag, label: 'Orders', href: '/admin/orders' },
+  { icon: Truck, label: 'Deliveries', href: '/admin/deliveries' },
   { icon: Users, label: 'Customers', href: '/admin/customers' },
   { icon: Ruler, label: 'Measurements', href: '/admin/measurements' },
   { icon: Package, label: 'Products', href: '/admin/products' },
@@ -75,7 +77,7 @@ export default function AdminLayout({ children }) {
 
       {/* Sidebar Navigation Drawer */}
       <aside 
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-slate-950 border-r border-border shadow-sm flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-card border-r border-border shadow-sm flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="p-6 flex items-center justify-between">
           <Link href="/admin/dashboard" className="text-xl font-bold text-primary flex items-center gap-2">
@@ -135,7 +137,7 @@ export default function AdminLayout({ children }) {
       {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col min-h-screen max-w-full overflow-hidden">
         {/* Mobile Header (simplified, logo + brand only) */}
-        <header className="lg:hidden bg-slate-950 border-b border-border p-4 flex items-center justify-between sticky top-0 z-30">
+        <header className="lg:hidden bg-card border-b border-border p-4 flex items-center justify-between sticky top-0 z-30">
           <span className="font-semibold text-foreground">Admin Panel</span>
           <Link href="/" className="text-primary font-bold text-sm flex items-center gap-1.5">
             <Scissors size={16} />

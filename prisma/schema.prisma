@@ -59,6 +59,7 @@ model Order {
   paymentStatus String
   totalAmount   Float
   deliveryType  String
+  deliveryAddress String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

@@ -32,7 +32,7 @@ export async function GET(req) {
     if (orders.length === 0) {
       return new Response(JSON.stringify({ orders: [] }), {
         status: 200,
-        headers: { 'Cache-Control': 'private, max-age=60' },
+        headers: { 'Cache-Control': 'no-store' },
       });
     }
 
@@ -85,7 +85,7 @@ export async function GET(req) {
 
     return new Response(JSON.stringify({ orders }), {
       status: 200,
-      headers: { 'Cache-Control': 'private, max-age=60' },
+      headers: { 'Cache-Control': 'no-store' },
     });
   } catch (error) {
     console.error('Fetch orders error:', error);

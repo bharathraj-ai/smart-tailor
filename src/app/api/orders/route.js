@@ -10,7 +10,7 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { deliveryType, paymentMethod, category, totalAmount } = body;
+    const { deliveryType, deliveryAddress, paymentMethod, category, totalAmount } = body;
 
     const db = await getDb();
 
@@ -59,18 +59,23 @@ export async function POST(req) {
     }
 
     // Create order
+    const orderData = {
+      userId,
+      status: 'Order Received',
+      totalAmount: totalAmount ? parseFloat(totalAmount) : 1299,
+      paymentStatus: paymentMethod === 'cod' ? 'Pending' : 'Paid',
+      paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Razorpay / Online',
+      deliveryType: deliveryType === 'home' ? 'Home Delivery' : 'Shop Pickup',
+    };
+
+    // Only include deliveryAddress if it's a home delivery with an address
+    if (deliveryType === 'home' && deliveryAddress) {
+      orderData.deliveryAddress = deliveryAddress;
+    }
+
     const { data: orderResult, error: orderError } = await db
       .from('orders')
-      .insert([
-        {
-          userId,
-          status: 'Order Received',
-          totalAmount: totalAmount ? parseFloat(totalAmount) : 1299,
-          paymentStatus: paymentMethod === 'cod' ? 'Pending' : 'Paid',
-          paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Razorpay / Online',
-          deliveryType: deliveryType === 'home' ? 'Home Delivery' : 'Shop Pickup',
-        }
-      ])
+      .insert([orderData])
       .select()
       .single();
 

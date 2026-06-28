@@ -13,6 +13,7 @@ function CheckoutContent() {
   const categorySlug = searchParams.get('category') || '';
 
   const [deliveryType, setDeliveryType] = useState('home');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -60,6 +61,7 @@ function CheckoutContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           deliveryType, 
+          deliveryAddress: deliveryType === 'home' ? deliveryAddress : null,
           paymentMethod,
           category: categoryName,
           totalAmount: totalAmount
@@ -132,7 +134,7 @@ function CheckoutContent() {
               <div className={styles.addressForm}>
                 <div className="form-group">
                   <label className="form-label">Full Address</label>
-                  <textarea className="form-input" rows="3" placeholder="Enter your full delivery address" required></textarea>
+                  <textarea className="form-input" rows="3" placeholder="Enter your full delivery address" required value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)}></textarea>
                 </div>
               </div>
             )}

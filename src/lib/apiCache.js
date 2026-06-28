@@ -77,7 +77,7 @@ export async function cachedFetch(url, options = {}, ttlSeconds = DEFAULT_TTL_SE
     }
   }
 
-  const res = await fetch(url, options);
+  const res = await fetch(url, { ...options, cache: 'no-store' });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} — ${url}`);
   }
