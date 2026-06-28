@@ -6,6 +6,7 @@ import { Package, Scissors, CheckCircle, Truck, Store } from 'lucide-react';
 import Link from 'next/link';
 import { getDb } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
 
 export default async function OrderDetailsPage({ params }) {
   const session = await getServerSession(authOptions);

@@ -4,8 +4,8 @@ import { ArrowRight, Scissors, Ruler, Truck, Star, Shield, Clock, ChevronRight }
 import styles from './page.module.css';
 import { getDb } from '@/lib/db';
 
-// Cache the page for 24 hours (86400 seconds) so it doesn't hit the database on every reload
-export const revalidate = 86400;
+// Force dynamic rendering - DB not available at build time
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   // Fetch hero images from database

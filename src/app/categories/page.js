@@ -2,8 +2,8 @@ import styles from './categories.module.css';
 import { getDb } from '@/lib/db';
 import CategoriesList from './CategoriesList';
 
-// Revalidate every 5 minutes instead of hitting DB on every request
-export const revalidate = 300;
+// Force dynamic rendering - DB not available at build time
+export const dynamic = 'force-dynamic';
 
 export default async function CategoriesPage() {
   const db = await getDb();
