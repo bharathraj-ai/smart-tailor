@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { CreditCard, Search, IndianRupee, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { cachedFetch } from '@/lib/apiCache';
 
@@ -33,16 +33,16 @@ export default function AdminPaymentsPage() {
     }
   };
 
-  const filtered = orders.filter(order => {
+  const filtered = useMemo(() => orders.filter(order => {
     const matchesSearch = order.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.id?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || order.paymentStatus === filterStatus;
     return matchesSearch && matchesFilter;
-  });
+  }), [orders, searchTerm, filterStatus]);
 
-  const totalRevenue = orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0);
-  const paidOrders = orders.filter(o => o.paymentStatus === 'Paid');
-  const pendingOrders = orders.filter(o => o.paymentStatus === 'Pending');
+  const totalRevenue = useMemo(() => orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0), [orders]);
+  const paidOrders = useMemo(() => orders.filter(o => o.paymentStatus === 'Paid'), [orders]);
+  const pendingOrders = useMemo(() => orders.filter(o => o.paymentStatus === 'Pending'), [orders]);
 
   if (loading) {
     return <div className="flex items-center justify-center p-12"><p className="text-muted-foreground">Loading payments...</p></div>;

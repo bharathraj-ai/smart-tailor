@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ShoppingBag, Clock, Package, CheckCircle, Search } from 'lucide-react';
 import { cachedFetch, invalidateCache } from '@/lib/apiCache';
 
@@ -58,19 +58,19 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = useMemo(() => orders.filter(order => {
     const matchesSearch = order.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.id?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || order.status === filterStatus;
     return matchesSearch && matchesFilter;
-  });
+  }), [orders, searchTerm, filterStatus]);
 
-  const stats = {
+  const stats = useMemo(() => ({
     total: orders.length,
     pending: orders.filter(o => o.status === 'Order Received' || o.status === 'Order Confirmed').length,
     inProgress: orders.filter(o => o.status === 'In Stitching' || o.status === 'Quality Check').length,
     delivered: orders.filter(o => o.status === 'Delivered').length,
-  };
+  }), [orders]);
 
   if (loading) {
     return <div className="flex items-center justify-center p-12"><p className="text-muted-foreground">Loading orders...</p></div>;

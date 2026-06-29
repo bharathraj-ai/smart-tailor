@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Ruler, Search, User, X } from 'lucide-react';
 import { cachedFetch } from '@/lib/apiCache';
 
@@ -32,10 +32,10 @@ export default function AdminMeasurementsPage() {
     }
   };
 
-  const filtered = measurements.filter(m =>
+  const filtered = useMemo(() => measurements.filter(m =>
     m.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     m.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ), [measurements, searchTerm]);
 
   if (loading) {
     return <div className="flex items-center justify-center p-12"><p className="text-muted-foreground">Loading measurements...</p></div>;

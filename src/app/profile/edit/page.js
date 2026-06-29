@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Phone, MapPin, Save, ArrowLeft } from 'lucide-react';
+import { cachedFetch, invalidateCache } from '@/lib/apiCache';
 import Link from 'next/link';
 import styles from './edit.module.css';
 
@@ -21,25 +22,13 @@ export default function EditProfilePage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        // We can just use the existing GET /api/auth/session to get basic info 
-        // but we need phone and address from db. Since we don't have a GET /api/user/profile 
-        // We will just fetch it from a new generic route or create one.
-        // Wait, the profile page itself uses server components. We can fetch using a server action 
-        // or just add a quick GET to the route we just created.
-        
-        // For simplicity, let's just make a GET request to the profile route.
-        const res = await fetch('/api/user/profile');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.user) {
-            setFormData({
-              name: data.user.name || '',
-              phone: data.user.phone || '',
-              address: data.user.address || ''
-            });
-          }
-        } else {
-          setError('Failed to load profile data');
+        const data = await cachedFetch('/api/user/profile', {}, 60);
+        if (data.user) {
+          setFormData({
+            name: data.user.name || '',
+            phone: data.user.phone || '',
+            address: data.user.address || ''
+          });
         }
       } catch (err) {
         setError('An error occurred while loading profile');
@@ -69,6 +58,8 @@ export default function EditProfilePage() {
       });
 
       if (res.ok) {
+        // Invalidate cached profile so next visit fetches fresh data
+        invalidateCache('/api/user/profile');
         // Redirect back to profile page
         router.push('/profile');
         router.refresh();

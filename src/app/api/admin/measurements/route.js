@@ -22,7 +22,10 @@ export async function GET() {
       throw error;
     }
 
-    return NextResponse.json({ measurements: measurements || [] }, { status: 200 });
+    return NextResponse.json({ measurements: measurements || [] }, {
+      status: 200,
+      headers: { 'Cache-Control': 'private, max-age=120' },
+    });
   } catch (error) {
     console.error('Error fetching measurements:', error);
     return NextResponse.json({ error: 'Failed to fetch measurements' }, { status: 500 });

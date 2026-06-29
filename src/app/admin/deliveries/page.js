@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Truck, MapPin, CheckCircle, Search, Phone } from 'lucide-react';
 import { cachedFetch, invalidateCache } from '@/lib/apiCache';
 
@@ -50,13 +50,13 @@ export default function AdminDeliveriesPage() {
     }
   };
 
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = useMemo(() => orders.filter(order => {
     return (
       order.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.deliveryAddress?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  });
+  }), [orders, searchTerm]);
 
   if (loading) {
     return <div className="flex items-center justify-center p-12"><p className="text-muted-foreground">Loading deliveries...</p></div>;

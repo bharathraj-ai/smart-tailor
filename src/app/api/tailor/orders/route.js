@@ -13,7 +13,7 @@ export async function GET(req) {
 
     const { data: user } = await db
       .from('users')
-      .select('*')
+      .select('id, role')
       .eq('email', session.user.email)
       .single();
 
@@ -40,7 +40,7 @@ export async function GET(req) {
     const userIds = [...new Set(orders.map(o => o.userId).filter(Boolean))];
     const { data: usersData } = await db
       .from('users')
-      .select('*')
+      .select('id, name, email, phone')
       .in('id', userIds);
 
     const usersMap = {};

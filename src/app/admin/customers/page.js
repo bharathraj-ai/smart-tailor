@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Users, Search, Mail, Phone, MapPin, ShoppingBag } from 'lucide-react';
 import { cachedFetch } from '@/lib/apiCache';
 
@@ -24,11 +24,11 @@ export default function AdminCustomersPage() {
     }
   };
 
-  const filtered = customers.filter(c =>
+  const filtered = useMemo(() => customers.filter(c =>
     c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.phone?.includes(searchTerm)
-  );
+  ), [customers, searchTerm]);
 
   if (loading) {
     return <div className="flex items-center justify-center p-12"><p className="text-muted-foreground">Loading customers...</p></div>;

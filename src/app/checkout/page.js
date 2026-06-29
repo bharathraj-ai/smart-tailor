@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { CreditCard, Banknote, MapPin, Store, CheckCircle } from 'lucide-react';
+import { cachedFetch } from '@/lib/apiCache';
 import styles from './checkout.module.css';
 
 function CheckoutContent() {
@@ -32,8 +33,7 @@ function CheckoutContent() {
 
   useEffect(() => {
     if (categorySlug) {
-      fetch('/api/categories')
-        .then(res => res.json())
+      cachedFetch('/api/categories', {}, 300)
         .then(data => {
           const cat = data.categories?.find(c => c.slug === categorySlug);
           if (cat) {

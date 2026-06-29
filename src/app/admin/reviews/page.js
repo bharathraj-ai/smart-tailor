@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Star, MessageSquare, ThumbsUp, Search } from 'lucide-react';
 import { cachedFetch } from '@/lib/apiCache';
 
@@ -25,10 +25,10 @@ export default function AdminReviewsPage() {
     }
   };
 
-  const filtered = orders.filter(o =>
+  const filtered = useMemo(() => orders.filter(o =>
     o.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     o.items?.[0]?.category?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ), [orders, searchTerm]);
 
   if (loading) {
     return <div className="flex items-center justify-center p-12"><p className="text-muted-foreground">Loading reviews...</p></div>;

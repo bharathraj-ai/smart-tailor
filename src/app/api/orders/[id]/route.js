@@ -13,7 +13,7 @@ export async function PATCH(req, { params }) {
 
     const { data: user } = await db
       .from('users')
-      .select('*')
+      .select('id, role')
       .eq('email', session.user.email)
       .single();
 

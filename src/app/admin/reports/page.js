@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { BarChart3, TrendingUp, IndianRupee, ShoppingBag, Users, Calendar, Download } from 'lucide-react';
 import { cachedFetch } from '@/lib/apiCache';
 
@@ -32,39 +32,48 @@ export default function AdminReportsPage() {
     }
   };
 
-  const totalRevenue = orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0);
-  const avgOrderValue = orders.length > 0 ? (totalRevenue / orders.length).toFixed(0) : 0;
-  const deliveredOrders = orders.filter(o => o.status === 'Delivered');
-  const pendingOrders = orders.filter(o => o.status !== 'Delivered');
+  const totalRevenue = useMemo(() => orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0), [orders]);
+  const avgOrderValue = useMemo(() => orders.length > 0 ? (totalRevenue / orders.length).toFixed(0) : 0, [orders, totalRevenue]);
+  const deliveredOrders = useMemo(() => orders.filter(o => o.status === 'Delivered'), [orders]);
+  const pendingOrders = useMemo(() => orders.filter(o => o.status !== 'Delivered'), [orders]);
 
   // Monthly breakdown
-  const monthlyData = {};
-  orders.forEach(o => {
-    const d = new Date(o.createdAt);
-    const key = d.toLocaleString('default', { month: 'short', year: 'numeric' });
-    if (!monthlyData[key]) monthlyData[key] = { orders: 0, revenue: 0 };
-    monthlyData[key].orders++;
-    monthlyData[key].revenue += o.totalAmount || 0;
-  });
+  const monthlyData = useMemo(() => {
+    const data = {};
+    orders.forEach(o => {
+      const d = new Date(o.createdAt);
+      const key = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+      if (!data[key]) data[key] = { orders: 0, revenue: 0 };
+      data[key].orders++;
+      data[key].revenue += o.totalAmount || 0;
+    });
+    return data;
+  }, [orders]);
 
   // Category breakdown
-  const categoryData = {};
-  orders.forEach(o => {
-    (o.items || []).forEach(item => {
-      const cat = item.category || 'Other';
-      if (!categoryData[cat]) categoryData[cat] = { count: 0, revenue: 0 };
-      categoryData[cat].count++;
-      categoryData[cat].revenue += o.totalAmount || 0;
+  const categoryData = useMemo(() => {
+    const data = {};
+    orders.forEach(o => {
+      (o.items || []).forEach(item => {
+        const cat = item.category || 'Other';
+        if (!data[cat]) data[cat] = { count: 0, revenue: 0 };
+        data[cat].count++;
+        data[cat].revenue += o.totalAmount || 0;
+      });
     });
-  });
+    return data;
+  }, [orders]);
 
   // Payment method breakdown
-  const paymentData = {};
-  orders.forEach(o => {
-    const method = o.paymentMethod || 'Unknown';
-    if (!paymentData[method]) paymentData[method] = 0;
-    paymentData[method]++;
-  });
+  const paymentData = useMemo(() => {
+    const data = {};
+    orders.forEach(o => {
+      const method = o.paymentMethod || 'Unknown';
+      if (!data[method]) data[method] = 0;
+      data[method]++;
+    });
+    return data;
+  }, [orders]);
 
   if (loading) {
     return <div className="flex items-center justify-center p-12"><p className="text-muted-foreground">Loading reports...</p></div>;
