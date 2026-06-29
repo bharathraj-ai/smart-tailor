@@ -137,6 +137,77 @@
   font-size: 1.5rem;
 }
 
+/* ─── Disabled Payment Option ─── */
+.optionDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  position: relative;
+  border-style: dashed;
+}
+
+.optionDisabled:hover {
+  border-color: var(--border-color);
+  opacity: 0.7;
+}
+
+.comingSoonBadge {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #92400e;
+  background-color: #fef3c7;
+  border-radius: 999px;
+}
+
+/* ─── Toast Banner ─── */
+.toastBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  color: #78350f;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: slideInToast 0.3s ease-out;
+}
+
+.toastClose {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #92400e;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.toastClose:hover {
+  background: rgba(146, 64, 14, 0.1);
+}
+
+@keyframes slideInToast {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   .checkoutContainer {
@@ -180,6 +251,9 @@
   }
   .optionIcon {
     margin-bottom: 0;
+  }
+  .comingSoonBadge {
+    margin-top: 0;
   }
   .totalAmount {
     font-size: 1.25rem;

@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { CreditCard, Banknote, MapPin, Store, CheckCircle } from 'lucide-react';
+import { CreditCard, Banknote, MapPin, Store, CheckCircle, AlertTriangle, X } from 'lucide-react';
 import { cachedFetch } from '@/lib/apiCache';
 import styles from './checkout.module.css';
 
@@ -20,6 +20,7 @@ function CheckoutContent() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [categoryName, setCategoryName] = useState('Custom Garment');
   const [categoryPrice, setCategoryPrice] = useState(999);
+  const [showToast, setShowToast] = useState(false);
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -149,12 +150,23 @@ function CheckoutContent() {
                 <Banknote size={24} className={styles.optionIcon} />
                 <span className={styles.optionText}>Cash on Delivery</span>
               </label>
-              <label className={`${styles.optionCard} ${paymentMethod === 'razorpay' ? styles.optionSelected : ''}`}>
-                <input type="radio" name="payment" value="razorpay" checked={paymentMethod === 'razorpay'} onChange={() => alert("service is not avaible now ! coming soon")} className={styles.hiddenRadio} />
+              <label className={`${styles.optionCard} ${styles.optionDisabled}`}
+                onClick={(e) => { e.preventDefault(); setShowToast(true); setTimeout(() => setShowToast(false), 4000); }}
+              >
+                <input type="radio" name="payment" value="razorpay" disabled className={styles.hiddenRadio} />
                 <CreditCard size={24} className={styles.optionIcon} />
                 <span className={styles.optionText}>Razorpay / Online</span>
+                <span className={styles.comingSoonBadge}>Coming Soon</span>
               </label>
             </div>
+
+            {showToast && (
+              <div className={styles.toastBanner}>
+                <AlertTriangle size={18} />
+                <span>Online payment is not available right now. Coming soon!</span>
+                <button className={styles.toastClose} onClick={() => setShowToast(false)}><X size={16} /></button>
+              </div>
+            )}
           </div>
 
           <div className={styles.formActions}>

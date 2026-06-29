@@ -159,7 +159,7 @@ export default async function Home() {
                 <div className={styles.stepNumber}>3</div>
                 <h3 className={styles.stepTitle}>Get It Delivered</h3>
                 <p className={styles.stepText}>Our expert tailors craft your garment and deliver it right to your doorstep within 7 days.</p>
-                <Link href="/contact" className={styles.stepLink}>
+                <Link href="/orders" className={styles.stepLink}>
                   Track Order <ChevronRight size={16} />
                 </Link>
               </div>

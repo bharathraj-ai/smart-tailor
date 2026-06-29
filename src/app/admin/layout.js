@@ -77,13 +77,13 @@ export default function AdminLayout({ children }) {
 
       {/* Sidebar Navigation Drawer */}
       <aside 
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-card border-r border-border shadow-sm flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 border-r border-border shadow-sm flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 bg-slate-950 dark:bg-slate-900 lg:bg-card lg:dark:bg-card ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="p-6 flex items-center justify-between">
-          <Link href="/admin/dashboard" className="text-xl font-bold text-primary flex items-center gap-2">
+          <Link href="/admin/dashboard" className="text-xl font-bold text-white lg:text-primary flex items-center gap-2">
             <span>Ajay Tailor Admin</span>
           </Link>
-          <button className="lg:hidden text-muted-foreground hover:text-foreground" onClick={() => setIsSidebarOpen(false)}>
+          <button className="lg:hidden text-gray-200 hover:text-white" onClick={() => setIsSidebarOpen(false)}>
             <X size={20} />
           </button>
         </div>
@@ -98,10 +98,10 @@ export default function AdminLayout({ children }) {
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative ${
                   isActive 
                     ? 'bg-primary text-primary-foreground font-medium shadow-sm' 
-                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                    : 'text-white lg:text-muted-foreground hover:bg-white/10 lg:hover:bg-secondary lg:hover:text-foreground'
                 }`}
               >
-                <item.icon size={18} className={isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'} />
+                <item.icon size={18} className={isActive ? 'text-primary-foreground' : 'text-white lg:text-muted-foreground lg:group-hover:text-foreground'} />
                 <span className="text-sm">{item.label}</span>
                 {isActive && (
                   <motion.div 
@@ -114,19 +114,19 @@ export default function AdminLayout({ children }) {
           })}
         </nav>
 
-        <div className="p-4 border-t border-border mt-auto">
-          <div className="mb-4 px-3 py-2 bg-secondary rounded-lg flex items-center gap-3">
+        <div className="p-4 border-t border-white/10 lg:border-border mt-auto">
+          <div className="mb-4 px-3 py-2 bg-white/10 lg:bg-secondary rounded-lg flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
               A
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-medium">Admin User</span>
-              <span className="text-xs text-muted-foreground">Super Admin</span>
+              <span className="text-sm font-medium text-white lg:text-foreground">Admin User</span>
+              <span className="text-xs text-gray-300 lg:text-muted-foreground">Super Admin</span>
             </div>
           </div>
           <Link
             href="/login"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors text-sm font-medium"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 lg:text-destructive hover:bg-red-500/10 lg:hover:bg-destructive/10 transition-colors text-sm font-medium"
           >
             <LogOut size={18} />
             <span>Logout</span>

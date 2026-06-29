@@ -67,7 +67,7 @@ export default function AdminProductsPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {categories.map(cat => (
-                <tr key={cat._id} className="hover:bg-muted/30 transition-colors">
+                <tr key={cat.id} className="hover:bg-muted/30 transition-colors">
                   <td className="px-6 py-4">
                     <img src={`/api/images/${cat.imageId}`} alt={cat.name} className="w-12 h-12 rounded-lg object-cover" />
                   </td>
