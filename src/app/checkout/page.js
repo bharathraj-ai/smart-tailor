@@ -150,7 +150,7 @@ function CheckoutContent() {
                 <span className={styles.optionText}>Cash on Delivery</span>
               </label>
               <label className={`${styles.optionCard} ${paymentMethod === 'razorpay' ? styles.optionSelected : ''}`}>
-                <input type="radio" name="payment" value="razorpay" checked={paymentMethod === 'razorpay'} onChange={() => setPaymentMethod('razorpay')} className={styles.hiddenRadio} />
+                <input type="radio" name="payment" value="razorpay" checked={paymentMethod === 'razorpay'} onChange={() => alert("service is not avaible now ! coming soon")} className={styles.hiddenRadio} />
                 <CreditCard size={24} className={styles.optionIcon} />
                 <span className={styles.optionText}>Razorpay / Online</span>
               </label>
